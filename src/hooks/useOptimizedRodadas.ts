@@ -151,44 +151,26 @@ export const useOptimizedRodadas = () => {
 
   const iniciarRodada = async (rodadaId: string) => {
     try {
+      console.log('[rodada] Iniciando rodada', rodadaId);
       const { error } = await supabase
         .from('rodadas')
-        .update({
-          status: 'ativa',
-          iniciou_em: new Date().toISOString()
-        })
+        .update({ status: 'ativa', iniciou_em: new Date().toISOString() })
         .eq('id', rodadaId);
 
-      if (error) throw error;
-      
-      // Fetch imediato para atualizar estado local
+      if (error) { console.error('[rodada] Erro iniciar:', error); throw error; }
+
       await fetchRodadaAtual(true);
-      
-      // Forçar atualização global imediata
+
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('rodada-iniciada', { 
-          detail: { 
-            rodadaId,
-            timestamp: new Date().toISOString() 
-          } 
-        }));
-        
-        // Forçar refresh global para todas as telas
-        window.dispatchEvent(new CustomEvent('global-data-changed', { 
-          detail: { 
-            table: 'rodadas',
-            action: 'iniciada',
-            timestamp: Date.now() 
-          } 
-        }));
+        window.dispatchEvent(new CustomEvent('rodada-iniciada', { detail: { rodadaId, timestamp: new Date().toISOString() } }));
+        window.dispatchEvent(new CustomEvent('global-data-changed', { detail: { table: 'rodadas', action: 'iniciada', timestamp: Date.now() } }));
       }
-      
-      toast.success('🚀 Rodada iniciada!', {
-        duration: 2000,
-      });
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao iniciar rodada');
+
+      toast.success('🚀 Rodada iniciada!', { duration: 2000 });
+    } catch (err: any) {
+      const msg = err?.message || 'Erro desconhecido';
+      setError(msg);
+      toast.error(`Erro ao iniciar rodada: ${msg}`);
       throw err;
     }
   };
@@ -282,93 +264,64 @@ export const useOptimizedRodadas = () => {
 
   const criarNovaRodada = async (numero: number, tempoLimite: number = 300) => {
     try {
-      console.log(`Criando nova rodada com número: ${numero}`);
-      
-      // Verificar se já existe rodada com este número
-      const { data: rodadaExistente } = await supabase
-        .from('rodadas')
-        .select('id')
-        .eq('numero', numero)
-        .single();
+      console.log(`[rodada] Criando nova rodada (numero pedido: ${numero}, tempo: ${tempoLimite})`);
 
-      if (rodadaExistente) {
-        throw new Error(`Já existe uma rodada com o número ${numero}`);
+      // Determinar número real via RPC atômico — evita colisão com rodadas existentes
+      let numeroFinal = numero;
+      try {
+        const { data: rpcNum, error: rpcErr } = await supabase.rpc('obter_proximo_numero_rodada');
+        if (!rpcErr && typeof rpcNum === 'number' && rpcNum > 0) {
+          numeroFinal = rpcNum;
+          console.log(`[rodada] Número definido via RPC: ${numeroFinal}`);
+        } else if (rpcErr) {
+          console.warn('[rodada] RPC obter_proximo_numero_rodada falhou, usando fallback:', rpcErr);
+        }
+      } catch (e) {
+        console.warn('[rodada] Exceção no RPC, fallback para max(numero)+1', e);
+      }
+
+      // Garantir que não colide com rodada existente
+      const { data: existente } = await supabase
+        .from('rodadas')
+        .select('id, numero')
+        .eq('numero', numeroFinal)
+        .maybeSingle();
+
+      if (existente) {
+        const { data: ult } = await supabase
+          .from('rodadas')
+          .select('numero')
+          .order('numero', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        numeroFinal = (ult?.numero ?? 0) + 1;
+        console.log(`[rodada] Colisão detectada, novo número: ${numeroFinal}`);
       }
 
       const { data, error } = await supabase
         .from('rodadas')
-        .insert({
-          numero,
-          tempo_limite: tempoLimite,
-          status: 'aguardando'
-        })
+        .insert({ numero: numeroFinal, tempo_limite: tempoLimite, status: 'aguardando' })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) { console.error('[rodada] Erro insert:', error); throw error; }
 
-      console.log(`Rodada ${numero} criada com sucesso`);
+      console.log(`[rodada] Rodada ${numeroFinal} criada com sucesso`, data);
 
-      // Incrementar o contador APÓS criar a rodada com sucesso
-      try {
-        const { data: rpcData, error: rpcError } = await supabase.rpc('obter_proximo_numero_rodada');
-        
-        if (rpcError) {
-          console.log('RPC falhou, usando incremento manual...', rpcError);
-          
-          const { data: contadorAtual, error: selectError } = await supabase
-            .from('contadores_jogo')
-            .select('valor')
-            .eq('chave', 'proximo_numero_rodada')
-            .single();
-
-          if (!selectError && contadorAtual) {
-            const novoValor = contadorAtual.valor + 1;
-            await supabase
-              .from('contadores_jogo')
-              .upsert({ 
-                chave: 'proximo_numero_rodada', 
-                valor: novoValor 
-              }, {
-                onConflict: 'chave'
-              });
-          }
-        }
-        console.log('Contador incrementado após criação da rodada');
-      } catch (contadorError) {
-        console.error('Erro ao incrementar contador, mas rodada foi criada:', contadorError);
-      }
-      
-      // Fetch imediato para atualizar estado local
       await fetchRodadaAtual(true);
-      
-      // Forçar atualização global imediata
+
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('rodada-criada', { 
-          detail: { 
-            rodada: data as Rodada,
-            timestamp: new Date().toISOString() 
-          } 
-        }));
-        
-        // Forçar refresh global para todas as telas
-        window.dispatchEvent(new CustomEvent('global-data-changed', { 
-          detail: { 
-            table: 'rodadas',
-            action: 'criada',
-            timestamp: Date.now() 
-          } 
-        }));
+        window.dispatchEvent(new CustomEvent('rodada-criada', { detail: { rodada: data as Rodada, timestamp: new Date().toISOString() } }));
+        window.dispatchEvent(new CustomEvent('global-data-changed', { detail: { table: 'rodadas', action: 'criada', timestamp: Date.now() } }));
       }
-      
-      toast.success(`🎯 Rodada ${numero} criada!`, {
-        duration: 2000,
-      });
-      
+
+      toast.success(`🎯 Rodada ${numeroFinal} criada!`, { duration: 2000 });
       return data as Rodada;
-    } catch (err) {
-      console.error('Erro ao criar rodada:', err);
-      setError(err instanceof Error ? err.message : 'Erro ao criar rodada');
+    } catch (err: any) {
+      const msg = err?.message || err?.error_description || 'Erro desconhecido';
+      console.error('[rodada] Falha ao criar rodada:', err);
+      setError(msg);
+      toast.error(`Erro ao criar rodada: ${msg}`);
       throw err;
     }
   };
