@@ -18,7 +18,7 @@ export const useGlobalRefresh = (options: UseGlobalRefreshOptions = {}) => {
   } = options;
 
   const queryClient = useQueryClient();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastRefreshRef = useRef<number>(0);
   const deviceIdRef = useRef<string>('');
   const channelRef = useRef<RealtimeChannel | null>(null);
