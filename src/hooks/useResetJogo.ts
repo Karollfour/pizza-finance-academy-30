@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -6,39 +7,51 @@ export const useResetJogo = () => {
   const [loading, setLoading] = useState(false);
 
   const resetarJogo = async () => {
-    setLoading(true);
     try {
-      console.log('[reset] Iniciando reset completo do jogo...');
+      setLoading(true);
+      
+      // Deletar todas as pizzas
+      const { error: pizzasError } = await supabase
+        .from('pizzas')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
 
-      // A função SQL resetar_contadores_jogo limpa todas as tabelas
-      // na ordem correta (historico_sabores_rodada → pedidos_rodada →
-      // pizzas → compras → rodadas), zera gastos/ganhos das equipes e
-      // reseta o contador proximo_numero_rodada para 1.
-      const { error } = await supabase.rpc('resetar_contadores_jogo');
+      if (pizzasError) throw pizzasError;
 
-      if (error) {
-        console.error('[reset] Erro RPC resetar_contadores_jogo:', error);
-        throw error;
-      }
+      // Deletar todas as compras
+      const { error: comprasError } = await supabase
+        .from('compras')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
 
-      console.log('[reset] Reset concluído com sucesso');
+      if (comprasError) throw comprasError;
 
-      // Notificar todas as telas
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('jogo-resetado', {
-          detail: { timestamp: Date.now() }
-        }));
-        window.dispatchEvent(new CustomEvent('global-data-changed', {
-          detail: { table: 'all', action: 'reset', timestamp: Date.now() }
-        }));
-      }
+      // Deletar todas as rodadas
+      const { error: rodadasError } = await supabase
+        .from('rodadas')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
 
-      toast.success('🎮 Jogo resetado com sucesso!');
+      if (rodadasError) throw rodadasError;
+
+      // Resetar gastos das equipes
+      const { error: equipesError } = await supabase
+        .from('equipes')
+        .update({ gasto_total: 0 })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all rows
+
+      if (equipesError) throw equipesError;
+
+      // Resetar contadores usando a função do banco
+      const { error: contadorError } = await supabase.rpc('resetar_contadores_jogo');
+      if (contadorError) throw contadorError;
+
+      toast.success('🎮 Jogo resetado com sucesso! Todos os históricos foram apagados.');
+      
       return true;
-    } catch (err: any) {
-      const msg = err?.message || err?.error_description || 'Erro desconhecido ao resetar';
-      console.error('[reset] Falha:', err);
-      toast.error(`Erro ao resetar o jogo: ${msg}`);
+    } catch (err) {
+      console.error('Erro ao resetar jogo:', err);
+      toast.error('Erro ao resetar o jogo. Tente novamente.');
       throw err;
     } finally {
       setLoading(false);

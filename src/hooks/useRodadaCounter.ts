@@ -141,16 +141,8 @@ export const useRodadaCounter = () => {
       )
       .subscribe();
 
-    const handleRefetch = () => { fetchProximoNumero(); };
-    window.addEventListener('jogo-resetado', handleRefetch as EventListener);
-    window.addEventListener('rodada-criada', handleRefetch as EventListener);
-    window.addEventListener('global-data-changed', handleRefetch as EventListener);
-
     return () => {
       supabase.removeChannel(channel);
-      window.removeEventListener('jogo-resetado', handleRefetch as EventListener);
-      window.removeEventListener('rodada-criada', handleRefetch as EventListener);
-      window.removeEventListener('global-data-changed', handleRefetch as EventListener);
     };
   }, []);
 
