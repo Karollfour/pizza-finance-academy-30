@@ -93,7 +93,7 @@ export const useHistoricoSaboresRodada = (rodadaId?: string) => {
     const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const channelName = `historico-sabores-${rodadaId}-${uniqueId}`;
     
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
     
     const channel = supabase
       .channel(channelName)
@@ -139,7 +139,7 @@ export const useHistoricoSaboresRodada = (rodadaId?: string) => {
 
   // Escutar eventos globais com debounce
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
     
     const handleGlobalDataChange = (event: CustomEvent) => {
       const { table } = event.detail;

@@ -16,7 +16,7 @@ export const useSaborAutomatico = ({ rodada, numeroPizzas }: UseSaborAutomaticoP
   const lastUpdateRef = useRef<number>(0);
   const lastIndexRef = useRef<number>(0);
   const saboresPassadosRef = useRef<any[]>([]);
-  const refetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const refetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Calcular intervalo de troca (tempo total ÷ número de pizzas) - memoizado
   const intervaloTroca = useMemo(() => {
