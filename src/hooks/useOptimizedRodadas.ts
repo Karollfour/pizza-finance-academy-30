@@ -151,44 +151,26 @@ export const useOptimizedRodadas = () => {
 
   const iniciarRodada = async (rodadaId: string) => {
     try {
+      console.log('[rodada] Iniciando rodada', rodadaId);
       const { error } = await supabase
         .from('rodadas')
-        .update({
-          status: 'ativa',
-          iniciou_em: new Date().toISOString()
-        })
+        .update({ status: 'ativa', iniciou_em: new Date().toISOString() })
         .eq('id', rodadaId);
 
-      if (error) throw error;
-      
-      // Fetch imediato para atualizar estado local
+      if (error) { console.error('[rodada] Erro iniciar:', error); throw error; }
+
       await fetchRodadaAtual(true);
-      
-      // Forçar atualização global imediata
+
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('rodada-iniciada', { 
-          detail: { 
-            rodadaId,
-            timestamp: new Date().toISOString() 
-          } 
-        }));
-        
-        // Forçar refresh global para todas as telas
-        window.dispatchEvent(new CustomEvent('global-data-changed', { 
-          detail: { 
-            table: 'rodadas',
-            action: 'iniciada',
-            timestamp: Date.now() 
-          } 
-        }));
+        window.dispatchEvent(new CustomEvent('rodada-iniciada', { detail: { rodadaId, timestamp: new Date().toISOString() } }));
+        window.dispatchEvent(new CustomEvent('global-data-changed', { detail: { table: 'rodadas', action: 'iniciada', timestamp: Date.now() } }));
       }
-      
-      toast.success('🚀 Rodada iniciada!', {
-        duration: 2000,
-      });
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao iniciar rodada');
+
+      toast.success('🚀 Rodada iniciada!', { duration: 2000 });
+    } catch (err: any) {
+      const msg = err?.message || 'Erro desconhecido';
+      setError(msg);
+      toast.error(`Erro ao iniciar rodada: ${msg}`);
       throw err;
     }
   };
