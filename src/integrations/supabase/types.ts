@@ -48,7 +48,29 @@ export type Database = {
           tipo?: string
           valor_total?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "compras_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compras_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos_loja"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compras_rodada_id_fkey"
+            columns: ["rodada_id"]
+            isOneToOne: false
+            referencedRelation: "rodadas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       configuracoes: {
         Row: {
@@ -168,7 +190,22 @@ export type Database = {
           rodada_id?: string
           sabor_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "historico_sabores_rodada_rodada_id_fkey"
+            columns: ["rodada_id"]
+            isOneToOne: false
+            referencedRelation: "rodadas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historico_sabores_rodada_sabor_id_fkey"
+            columns: ["sabor_id"]
+            isOneToOne: false
+            referencedRelation: "sabores_pizza"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       itens: {
         Row: {
@@ -240,7 +277,22 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_rodada_rodada_id_fkey"
+            columns: ["rodada_id"]
+            isOneToOne: false
+            referencedRelation: "rodadas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_rodada_sabor_id_fkey"
+            columns: ["sabor_id"]
+            isOneToOne: false
+            referencedRelation: "sabores_pizza"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pizzas: {
         Row: {
@@ -282,7 +334,29 @@ export type Database = {
           tempo_producao_segundos?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pizzas_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizzas_rodada_id_fkey"
+            columns: ["rodada_id"]
+            isOneToOne: false
+            referencedRelation: "rodadas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pizzas_sabor_id_fkey"
+            columns: ["sabor_id"]
+            isOneToOne: false
+            referencedRelation: "sabores_pizza"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       produtos_loja: {
         Row: {
@@ -372,7 +446,22 @@ export type Database = {
           quantidade?: number
           sabor_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sabor_ingredientes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos_loja"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sabor_ingredientes_sabor_id_fkey"
+            columns: ["sabor_id"]
+            isOneToOne: false
+            referencedRelation: "sabores_pizza"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sabores_pizza: {
         Row: {
