@@ -100,22 +100,11 @@ const VisualizadorSaboresRodada = ({
       </Card>;
   }
 
-  // Helper function para obter cor do sabor específica
-  const getSaborCorRodadaAtual = (saborNome: string) => {
-    const nome = saborNome?.toLowerCase() || '';
-    if (nome.includes('mussarela') || nome.includes('queijo')) {
-      return '#eab308'; // amarelo
-    } else if (nome.includes('pepperoni') || nome.includes('calabresa')) {
-      return '#ea580c'; // laranja
-    } else if (nome.includes('margherita') || nome.includes('tomate')) {
-      return '#16a34a'; // verde
-    } else if (nome.includes('frango') || nome.includes('chicken')) {
-      return '#dc2626'; // vermelho
-    } else if (nome.includes('portuguesa')) {
-      return '#7c3aed'; // roxo
-    } else {
-      return '#6b7280'; // cinza padrão
-    }
+  // Helper: retorna a cor cadastrada no banco ou fallback cinza
+  const getSaborCor = (item: any): string => {
+    if (item?.sabor?.cor) return item.sabor.cor;
+    const saborEncontrado = sabores.find(s => s.id === item?.sabor_id);
+    return (saborEncontrado as any)?.cor || '#9CA3AF';
   };
 
   const getSaborNome = (item: any) => {
@@ -149,19 +138,19 @@ const VisualizadorSaboresRodada = ({
     return <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Primeiro Sabor */}
         <div className="lg:col-span-2">
-          <Card className="shadow-xl border-4 border-yellow-400 bg-yellow-50">
+          <Card className="shadow-xl border-4 bg-white" style={{ borderColor: getSaborCor(primeiroSabor) }}>
             <CardContent className="p-8 text-center">
-              <Badge className="bg-yellow-500 text-white text-lg px-4 py-2 mb-4">
+              <Badge className="text-white text-lg px-4 py-2 mb-4" style={{ backgroundColor: getSaborCor(primeiroSabor) }}>
                 🍕 PRIMEIRO SABOR
               </Badge>
               <div className="text-6xl mb-4">🍕</div>
-              <h2 className="text-4xl font-bold text-yellow-700 mb-2">
+              <h2 className="text-4xl font-bold mb-2" style={{ color: getSaborCor(primeiroSabor) }}>
                 {getSaborNome(primeiroSabor)}
               </h2>
-              {getSaborDescricao(primeiroSabor) && <p className="text-lg text-yellow-600 mb-4">
+              {getSaborDescricao(primeiroSabor) && <p className="text-lg mb-4" style={{ color: getSaborCor(primeiroSabor) }}>
                   {getSaborDescricao(primeiroSabor)}
                 </p>}
-              <div className="text-lg text-yellow-600">
+              <div className="text-lg" style={{ color: getSaborCor(primeiroSabor) }}>
                 Pizza #{primeiroSabor?.ordem || 1}
               </div>
             </CardContent>
@@ -170,31 +159,31 @@ const VisualizadorSaboresRodada = ({
 
         {/* Próximos Sabores */}
         <div className="space-y-4">
-          {segundoSabor && <Card className="shadow-lg border-2 border-blue-400 bg-blue-50">
+          {segundoSabor && <Card className="shadow-lg border-2 bg-white" style={{ borderColor: getSaborCor(segundoSabor) }}>
               <CardContent className="p-4 text-center">
-                <Badge className="bg-blue-500 text-white text-sm px-3 py-1 mb-2">
+                <Badge className="text-white text-sm px-3 py-1 mb-2" style={{ backgroundColor: getSaborCor(segundoSabor) }}>
                   SEGUNDO
                 </Badge>
                 <div className="text-3xl mb-2">🍕</div>
-                <h3 className="text-xl font-bold text-blue-700">
+                <h3 className="text-xl font-bold" style={{ color: getSaborCor(segundoSabor) }}>
                   {getSaborNome(segundoSabor)}
                 </h3>
-                <div className="text-sm text-blue-600">
+                <div className="text-sm" style={{ color: getSaborCor(segundoSabor) }}>
                   Pizza #{segundoSabor.ordem}
                 </div>
               </CardContent>
             </Card>}
 
-          {terceiroSabor && <Card className="shadow-lg border-2 border-purple-400 bg-purple-50">
+          {terceiroSabor && <Card className="shadow-lg border-2 bg-white" style={{ borderColor: getSaborCor(terceiroSabor) }}>
               <CardContent className="p-4 text-center">
-                <Badge className="bg-purple-500 text-white text-sm px-3 py-1 mb-2">
+                <Badge className="text-white text-sm px-3 py-1 mb-2" style={{ backgroundColor: getSaborCor(terceiroSabor) }}>
                   TERCEIRO
                 </Badge>
                 <div className="text-3xl mb-2">🍕</div>
-                <h3 className="text-xl font-bold text-purple-700">
+                <h3 className="text-xl font-bold" style={{ color: getSaborCor(terceiroSabor) }}>
                   {getSaborNome(terceiroSabor)}
                 </h3>
-                <div className="text-sm text-purple-600">
+                <div className="text-sm" style={{ color: getSaborCor(terceiroSabor) }}>
                   Pizza #{terceiroSabor.ordem}
                 </div>
               </CardContent>
@@ -217,28 +206,28 @@ const VisualizadorSaboresRodada = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Sabor Atual - Automático */}
         <div className="lg:col-span-2">
-          <Card className="shadow-xl border-4 border-green-400 bg-green-50">
+          <Card className="shadow-xl border-4 bg-white" style={{ borderColor: getSaborCor(saborAtual) }}>
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-white text-lg px-4 py-2 mb-4">
+              <Badge className="text-white text-lg px-4 py-2 mb-4" style={{ backgroundColor: getSaborCor(saborAtual) }}>
                 🍕 SABOR ATUAL - AUTOMÁTICO
               </Badge>
               <div className="text-6xl mb-4">🍕</div>
-              <h2 className="text-4xl font-bold text-green-700 mb-2">
+              <h2 className="text-4xl font-bold mb-2" style={{ color: getSaborCor(saborAtual) }}>
                 {getSaborNome(saborAtual)}
               </h2>
-              {getSaborDescricao(saborAtual) && <p className="text-lg text-green-600 mb-4">
+              {getSaborDescricao(saborAtual) && <p className="text-lg mb-4" style={{ color: getSaborCor(saborAtual) }}>
                   {getSaborDescricao(saborAtual)}
                 </p>}
-              <div className="text-lg text-green-600 mb-4">
+              <div className="text-lg mb-4" style={{ color: getSaborCor(saborAtual) }}>
                 Pizza #{saborAtualIndex + 1} de {historico.length}
               </div>
               
               {/* Tempo para próxima troca */}
-              <div className="bg-green-100 p-3 rounded-lg">
-                <div className="text-sm text-green-600 font-medium">
+              <div className="p-3 rounded-lg" style={{ backgroundColor: getSaborCor(saborAtual) + '20' }}>
+                <div className="text-sm font-medium" style={{ color: getSaborCor(saborAtual) }}>
                   Próxima troca em: {formatarTempo(tempoProximaTroca)}
                 </div>
-                <div className="text-xs text-green-500">
+                <div className="text-xs" style={{ color: getSaborCor(saborAtual) }}>
                   (Intervalo: {formatarTempo(intervaloTroca)} por pizza)
                 </div>
               </div>
@@ -248,19 +237,19 @@ const VisualizadorSaboresRodada = ({
 
         {/* Próximos 2 Sabores e Estatísticas */}
         <div className="space-y-4">
-          {proximoSabor ? <Card className="shadow-lg border-2 border-blue-400 bg-blue-50">
+          {proximoSabor ? <Card className="shadow-lg border-2 bg-white" style={{ borderColor: getSaborCor(proximoSabor) }}>
               <CardContent className="p-4 text-center">
-                <Badge className="bg-blue-500 text-white text-sm px-3 py-1 mb-2">
+                <Badge className="text-white text-sm px-3 py-1 mb-2" style={{ backgroundColor: getSaborCor(proximoSabor) }}>
                   PRÓXIMO
                 </Badge>
                 <div className="text-3xl mb-2">🍕</div>
-                <h3 className="text-xl font-bold text-blue-700">
+                <h3 className="text-xl font-bold" style={{ color: getSaborCor(proximoSabor) }}>
                   {getSaborNome(proximoSabor)}
                 </h3>
-                <div className="text-sm text-blue-600">
+                <div className="text-sm" style={{ color: getSaborCor(proximoSabor) }}>
                   Pizza #{saborAtualIndex + 2}
                 </div>
-                <div className="text-xs text-blue-500 mt-1">
+                <div className="text-xs mt-1" style={{ color: getSaborCor(proximoSabor) }}>
                   Em {formatarTempo(tempoProximaTroca)}
                 </div>
               </CardContent>
@@ -273,19 +262,19 @@ const VisualizadorSaboresRodada = ({
               </CardContent>
             </Card>}
 
-          {segundoProximoSabor && <Card className="shadow-lg border-2 border-purple-400 bg-purple-50">
+          {segundoProximoSabor && <Card className="shadow-lg border-2 bg-white" style={{ borderColor: getSaborCor(segundoProximoSabor) }}>
               <CardContent className="p-4 text-center">
-                <Badge className="bg-purple-500 text-white text-sm px-3 py-1 mb-2">
+                <Badge className="text-white text-sm px-3 py-1 mb-2" style={{ backgroundColor: getSaborCor(segundoProximoSabor) }}>
                   DEPOIS
                 </Badge>
                 <div className="text-3xl mb-2">🍕</div>
-                <h3 className="text-lg font-bold text-purple-700">
+                <h3 className="text-lg font-bold" style={{ color: getSaborCor(segundoProximoSabor) }}>
                   {getSaborNome(segundoProximoSabor)}
                 </h3>
-                <div className="text-sm text-purple-600">
+                <div className="text-sm" style={{ color: getSaborCor(segundoProximoSabor) }}>
                   Pizza #{saborAtualIndex + 3}
                 </div>
-                <div className="text-xs text-purple-500 mt-1">
+                <div className="text-xs mt-1" style={{ color: getSaborCor(segundoProximoSabor) }}>
                   Em {formatarTempo(tempoProximaTroca + intervaloTroca)}
                 </div>
               </CardContent>
@@ -322,7 +311,7 @@ const VisualizadorSaboresRodada = ({
             <div className="grid grid-cols-10 md:grid-cols-15 lg:grid-cols-20 gap-2">
               {historico.map((sabor, index) => {
                 const saborNome = getSaborNome(sabor);
-                const cor = getSaborCorRodadaAtual(saborNome);
+                const cor = getSaborCor(sabor);
                 const isAtual = index === saborAtualIndex;
                 const isPassado = index < saborAtualIndex;
                 
@@ -337,12 +326,15 @@ const VisualizadorSaboresRodada = ({
                     <div
                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold text-white shadow-md ${
                         isAtual 
-                          ? 'border-yellow-600 animate-pulse' 
+                          ? 'animate-pulse' 
                           : isPassado 
-                            ? 'border-gray-400 opacity-60' 
-                            : 'border-yellow-400'
+                            ? 'opacity-60' 
+                            : ''
                       }`}
-                      style={{ backgroundColor: cor }}
+                      style={{ 
+                        backgroundColor: isPassado ? cor + 'aa' : cor,
+                        borderColor: isAtual ? '#ffffff' : cor
+                      }}
                     >
                       {index + 1}
                     </div>
@@ -354,10 +346,10 @@ const VisualizadorSaboresRodada = ({
                     
                     {/* Indicador de status */}
                     {isAtual && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white animate-pulse"></div>
+                      <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full border border-white animate-pulse" style={{ backgroundColor: cor }}></div>
                     )}
                     {isPassado && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-500 rounded-full border border-white">
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-400 rounded-full border border-white">
                         <div className="w-full h-full flex items-center justify-center">
                           <div className="w-1 h-1 bg-white rounded-full"></div>
                         </div>
@@ -368,32 +360,18 @@ const VisualizadorSaboresRodada = ({
               })}
             </div>
             
-            {/* Legenda específica para rodada atual */}
-            <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span>Mussarela/Queijo</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-orange-600 rounded-full"></div>
-                <span>Pepperoni/Calabresa</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-600 rounded-full"></div>
-                <span>Margherita/Tomate</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-600 rounded-full"></div>
-                <span>Frango</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
-                <span>Portuguesa</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-                <span>Outros</span>
-              </div>
+            {/* Legenda dinâmica - sabores únicos presentes na sequência */}
+            <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs">
+              {Array.from(
+                new Map(
+                  historico.map(item => [item.sabor_id, { nome: getSaborNome(item), cor: getSaborCor(item) }])
+                ).values()
+              ).map(({ nome, cor }) => (
+                <div key={nome} className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cor }}></div>
+                  <span className="text-gray-600">{nome}</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

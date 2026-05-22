@@ -11,6 +11,7 @@ interface HistoricoSaborRodada {
   sabor?: {
     nome: string;
     descricao?: string;
+    cor?: string;
   };
 }
 
@@ -43,7 +44,7 @@ export const useHistoricoSaboresRodada = (rodadaId?: string) => {
         .from('historico_sabores_rodada')
         .select(`
           *,
-          sabor:sabores_pizza(nome, descricao)
+          sabor:sabores_pizza(nome, descricao, cor)
         `)
         .eq('rodada_id', rodadaId)
         .order('ordem', { ascending: true });

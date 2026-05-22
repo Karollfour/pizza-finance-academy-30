@@ -575,26 +575,21 @@ const ProducaoScreen = () => {
     const saborEncontrado = sabores.find(s => s.id === item?.sabor_id);
     return saborEncontrado?.descricao;
   };
+  const getSaborCor = (item: any) => {
+    if (item?.sabor?.cor) {
+      return item.sabor.cor;
+    }
+    const saborEncontrado = sabores.find(s => s.id === item?.sabor_id);
+    return saborEncontrado?.cor || '#9CA3AF';
+  };
   const formatarTempo = (segundos: number) => {
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
   const getSaborCorRodadaAtual = (saborNome: string) => {
-    const nome = saborNome?.toLowerCase() || '';
-    if (nome.includes('mussarela') || nome.includes('queijo')) {
-      return 'rgba(234, 179, 8, 0.15)';
-    } else if (nome.includes('pepperoni') || nome.includes('calabresa')) {
-      return 'rgba(234, 88, 12, 0.15)';
-    } else if (nome.includes('margherita') || nome.includes('tomate')) {
-      return 'rgba(22, 163, 74, 0.15)';
-    } else if (nome.includes('frango') || nome.includes('chicken')) {
-      return 'rgba(220, 38, 38, 0.15)';
-    } else if (nome.includes('portuguesa')) {
-      return 'rgba(124, 58, 237, 0.15)';
-    } else {
-      return 'rgba(107, 114, 128, 0.15)';
-    }
+    const saborEncontrado = sabores.find(s => s.nome?.toLowerCase() === saborNome?.toLowerCase());
+    return saborEncontrado?.cor || '#9CA3AF';
   };
 
   // Componente para o conteúdo atual de controle de rodadas
@@ -783,7 +778,7 @@ const ProducaoScreen = () => {
             {rodadaAtual?.status === 'ativa' && saborAtual ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Sabor Atual */}
                 <div className="lg:col-span-2">
-                  <Card className="shadow-lg border-2 border-green-400 bg-green-100">
+                  <Card className="shadow-lg border-4 bg-green-50" style={{ borderColor: getSaborCor(saborAtual) }}>
                     <CardContent className="p-6 text-center">
                       <Badge className="bg-green-500 text-white text-sm px-3 py-1 mb-3">🍕 EM PRODUÇÃO</Badge>
                       <div className="text-4xl mb-3">🍕</div>
@@ -808,7 +803,7 @@ const ProducaoScreen = () => {
 
                 {/* Próximos Sabores */}
                 <div className="space-y-3">
-                  {proximoSabor ? <Card className="shadow-lg border-2 border-blue-400 bg-blue-50">
+                  {proximoSabor ? <Card className="shadow-lg border-2 bg-blue-50" style={{ borderColor: getSaborCor(proximoSabor) }}>
                       <CardContent className="p-3 text-center">
                         <Badge className="bg-blue-500 text-white text-xs px-2 py-1 mb-2">PRÓXIMO</Badge>
                         <div className="text-2xl mb-2">🍕</div>
@@ -829,7 +824,7 @@ const ProducaoScreen = () => {
                       </CardContent>
                     </Card>}
 
-                  {segundoProximoSabor && <Card className="shadow-lg border-2 border-purple-400 bg-purple-50">
+                  {segundoProximoSabor && <Card className="shadow-lg border-2 bg-purple-50" style={{ borderColor: getSaborCor(segundoProximoSabor) }}>
                       <CardContent className="p-3 text-center">
                         <Badge className="bg-purple-500 text-white text-xs px-2 py-1 mb-2">PRÓXIMO +2</Badge>
                         <div className="text-2xl mb-2">🍕</div>
@@ -848,7 +843,7 @@ const ProducaoScreen = () => {
               </div> : (/* Visualização Estática do Carrossel quando aguardando início */
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2">
-                  <Card className="shadow-lg border-2 border-yellow-400 bg-yellow-50">
+                  <Card className="shadow-lg border-4 bg-yellow-50" style={{ borderColor: getSaborCor(historico[carouselIndex]) }}>
                     <CardContent className="p-6 text-center">
                       <Badge className="bg-yellow-500 text-white text-sm px-3 mb-3">
                         🍕 PIZZA #{historico[carouselIndex]?.ordem || carouselIndex + 1}
@@ -871,7 +866,7 @@ const ProducaoScreen = () => {
                 </div>
 
                 <div className="space-y-3">
-                  {historico[carouselIndex + 1] && <Card className="shadow-lg border-2 border-blue-400 bg-blue-50">
+                  {historico[carouselIndex + 1] && <Card className="shadow-lg border-2 bg-blue-50" style={{ borderColor: getSaborCor(historico[carouselIndex + 1]) }}>
                       <CardContent className="p-3 text-center">
                         <Badge className="bg-blue-500 text-white text-xs px-2 py-1 mb-2">PRÓXIMO</Badge>
                         <div className="text-2xl mb-2">🍕</div>
@@ -884,7 +879,7 @@ const ProducaoScreen = () => {
                       </CardContent>
                     </Card>}
 
-                  {historico[carouselIndex + 2] && <Card className="shadow-lg border-2 border-purple-400 bg-purple-50">
+                  {historico[carouselIndex + 2] && <Card className="shadow-lg border-2 bg-purple-50" style={{ borderColor: getSaborCor(historico[carouselIndex + 2]) }}>
                       <CardContent className="p-3 text-center">
                         <Badge className="bg-purple-500 text-white text-xs px-2 py-1 mb-2">PRÓXIMO +2</Badge>
                         <div className="text-2xl mb-2">🍕</div>

@@ -35,7 +35,7 @@ export const useHistoricoRodadas = (equipeId?: string) => {
         // Buscar pizzas da rodada
         let pizzasQuery = supabase
           .from('pizzas')
-          .select('*')
+          .select('*, sabor:sabores_pizza(*)')
           .eq('rodada_id', rodada.id);
         
         if (equipeId) {

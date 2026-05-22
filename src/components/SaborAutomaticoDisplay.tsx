@@ -45,7 +45,7 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
   return (
     <div className="space-y-6">
       {/* Sabor Atual */}
-      <Card className="shadow-xl border-4 border-green-400 bg-green-50">
+      <Card className="shadow-xl border-4 bg-green-50" style={{ borderColor: saborAtual.sabor?.cor || '#9CA3AF' }}>
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-green-700">
             🍕 SABOR ATUAL - Pizza #{saborAtualIndex + 1}
@@ -78,7 +78,7 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
       {/* Próximos 2 Sabores */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {proximoSabor && (
-          <Card className="shadow-lg border-2 border-blue-400 bg-blue-50">
+          <Card className="shadow-lg border-2 bg-blue-50" style={{ borderColor: proximoSabor.sabor?.cor || '#9CA3AF' }}>
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-blue-600 text-lg">
                 🔜 PRÓXIMO - Pizza #{saborAtualIndex + 2}
@@ -102,7 +102,7 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
         )}
 
         {segundoProximoSabor && (
-          <Card className="shadow-lg border-2 border-purple-400 bg-purple-50">
+          <Card className="shadow-lg border-2 bg-purple-50" style={{ borderColor: segundoProximoSabor.sabor?.cor || '#9CA3AF' }}>
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-purple-600 text-lg">
                 🔜 DEPOIS - Pizza #{saborAtualIndex + 3}
