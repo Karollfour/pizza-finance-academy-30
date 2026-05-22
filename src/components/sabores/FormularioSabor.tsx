@@ -14,6 +14,7 @@ interface FormularioSaborProps {
   onSubmit: (formData: {
     nome: string;
     descricao: string;
+    cor: string;
     ingredientes: string[];
     imagem: File | null;
   }) => Promise<void>;
@@ -22,6 +23,17 @@ interface FormularioSaborProps {
   setModalAberto: (aberto: boolean) => void;
   resetForm: () => void;
 }
+
+const CORES_PRESET = [
+  { label: 'Amarelo', value: '#FCD34D' },
+  { label: 'Vermelho', value: '#EF4444' },
+  { label: 'Verde', value: '#22C55E' },
+  { label: 'Laranja', value: '#F97316' },
+  { label: 'Azul', value: '#3B82F6' },
+  { label: 'Roxo', value: '#A855F7' },
+  { label: 'Rosa', value: '#EC4899' },
+  { label: 'Cinza', value: '#9CA3AF' },
+];
 
 export const FormularioSabor = ({
   saborEditando,
@@ -34,6 +46,7 @@ export const FormularioSabor = ({
   const [formData, setFormData] = useState({
     nome: saborEditando?.nome || '',
     descricao: saborEditando?.descricao || '',
+    cor: (saborEditando as any)?.cor || '#FCD34D',
     ingredientes: saborEditando?.ingredientes || [],
     imagem: null as File | null
   });
@@ -87,7 +100,7 @@ export const FormularioSabor = ({
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">Descrição</label>
             <Textarea
@@ -98,14 +111,41 @@ export const FormularioSabor = ({
           </div>
 
           <div>
+            <label className="block text-sm font-medium mb-2">Cor de identificação</label>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-wrap gap-2">
+                {CORES_PRESET.map((c) => (
+                  <button
+                    type="button"
+                    key={c.value}
+                    onClick={() => setFormData(prev => ({ ...prev, cor: c.value }))}
+                    title={c.label}
+                    className={`w-7 h-7 rounded-full border-2 transition-transform ${
+                      formData.cor === c.value ? 'border-foreground scale-110' : 'border-transparent'
+                    }`}
+                    style={{ backgroundColor: c.value }}
+                    aria-label={c.label}
+                  />
+                ))}
+              </div>
+              <Input
+                type="color"
+                value={formData.cor}
+                onChange={(e) => setFormData(prev => ({ ...prev, cor: e.target.value }))}
+                className="w-12 h-9 p-1 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium mb-1">Imagem</label>
             <div className="flex items-center space-x-2">
               <Input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  imagem: e.target.files?.[0] || null 
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  imagem: e.target.files?.[0] || null
                 }))}
               />
               <ImagePlus className="w-4 h-4" />
@@ -126,11 +166,11 @@ export const FormularioSabor = ({
                 ))}
               </SelectContent>
             </Select>
-            
+
             <div className="flex flex-wrap gap-2 mt-2">
               {formData.ingredientes.map(ingredienteId => (
-                <Badge 
-                  key={ingredienteId} 
+                <Badge
+                  key={ingredienteId}
                   variant="secondary"
                   className="cursor-pointer"
                   onClick={() => removerIngrediente(ingredienteId)}
@@ -145,9 +185,9 @@ export const FormularioSabor = ({
             <Button type="submit" className="flex-1">
               {saborEditando ? 'Atualizar' : 'Criar'}
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => setModalAberto(false)}
             >
               Cancelar
