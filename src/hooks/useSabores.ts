@@ -138,7 +138,8 @@ export const useSabores = () => {
           nome: dados.nome,
           descricao: dados.descricao,
           disponivel: dados.disponivel,
-          imagem: imagemUrl
+          imagem: imagemUrl,
+          ...((dados as any).cor !== undefined ? { cor: (dados as any).cor } : {})
         })
         .eq('id', id);
 
