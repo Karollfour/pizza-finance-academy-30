@@ -15,6 +15,7 @@ const GerenciadorSabores = () => {
   const handleSubmit = async (formData: {
     nome: string;
     descricao: string;
+    cor: string;
     ingredientes: string[];
     imagem: File | null;
   }) => {
@@ -25,7 +26,8 @@ const GerenciadorSabores = () => {
           {
             nome: formData.nome,
             descricao: formData.descricao,
-            ingredientes: formData.ingredientes
+            ingredientes: formData.ingredientes,
+            ...({ cor: formData.cor } as any)
           },
           formData.imagem || undefined
         );
@@ -38,7 +40,8 @@ const GerenciadorSabores = () => {
           formData.nome,
           formData.descricao,
           formData.ingredientes,
-          formData.imagem || undefined
+          formData.imagem || undefined,
+          formData.cor
         );
         toast({
           title: "Sabor criado com sucesso!",

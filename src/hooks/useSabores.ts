@@ -60,17 +60,13 @@ export const useSabores = () => {
   };
 
   const criarSabor = async (
-    nome: string, 
-    descricao?: string, 
-    ingredientes?: string[], 
-    imagemFile?: File
+    nome: string,
+    descricao?: string,
+    ingredientes?: string[],
+    imagemFile?: File,
+    cor?: string
   ) => {
     try {
-      // Apenas permitir Pepperoni e Mussarela
-      if (!['Pepperoni', 'Mussarela'].includes(nome)) {
-        throw new Error('Apenas sabores Pepperoni e Mussarela são permitidos');
-      }
-
       let imagemUrl = null;
       if (imagemFile) {
         imagemUrl = await uploadImagem(imagemFile);
@@ -82,7 +78,8 @@ export const useSabores = () => {
           nome,
           descricao: descricao || null,
           disponivel: true,
-          imagem: imagemUrl
+          imagem: imagemUrl,
+          cor: cor || '#9CA3AF'
         })
         .select()
         .single();
@@ -141,7 +138,8 @@ export const useSabores = () => {
           nome: dados.nome,
           descricao: dados.descricao,
           disponivel: dados.disponivel,
-          imagem: imagemUrl
+          imagem: imagemUrl,
+          ...((dados as any).cor !== undefined ? { cor: (dados as any).cor } : {})
         })
         .eq('id', id);
 
