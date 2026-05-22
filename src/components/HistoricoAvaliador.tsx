@@ -123,8 +123,8 @@ const HistoricoAvaliador = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {rodadaSelecionadaObj.pizzas
-                          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                        {[...rodadaSelecionadaObj.pizzas]
+                          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                           .map((pizza) => (
                             <TableRow key={pizza.id}>
                               <TableCell className="font-bold">
