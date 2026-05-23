@@ -363,6 +363,7 @@ export type Database = {
       }
       sabores_pizza: {
         Row: {
+          cor: string
           created_at: string
           descricao: string | null
           disponivel: boolean
@@ -371,6 +372,7 @@ export type Database = {
           nome: string
         }
         Insert: {
+          cor?: string
           created_at?: string
           descricao?: string | null
           disponivel?: boolean
@@ -379,6 +381,7 @@ export type Database = {
           nome: string
         }
         Update: {
+          cor?: string
           created_at?: string
           descricao?: string | null
           disponivel?: boolean

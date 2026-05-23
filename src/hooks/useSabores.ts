@@ -238,16 +238,18 @@ export const useSabores = () => {
           disponivel: true,
           created_at: new Date().toISOString(),
           ingredientes: [],
-          imagem: null
+          imagem: null,
+          cor: '#F97316'
         },
         { 
           id: '2',
           nome: 'Mussarela', 
-          descricao: null, // Sem descrição
+          descricao: null,
           disponivel: true,
           created_at: new Date().toISOString(),
           ingredientes: [],
-          imagem: 'exemplo.jpg' // Com imagem
+          imagem: 'exemplo.jpg',
+          cor: '#FCD34D'
         }
       ];
 
