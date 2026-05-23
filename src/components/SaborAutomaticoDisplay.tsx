@@ -43,17 +43,30 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const corAtual = saborAtual.sabor?.cor || '#9CA3AF';
+
   return (
     <div className="space-y-6">
       {/* Sabor Atual */}
-      <Card className="shadow-xl border-4 bg-green-50" style={{ borderColor: saborAtual.sabor?.cor || '#9CA3AF' }}>
+      <Card
+        className="shadow-xl border-4"
+        style={{
+          borderColor: corAtual,
+          backgroundColor: `${corAtual}22`,
+        }}
+      >
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-green-700">
             🍕 SABOR ATUAL - Pizza #{saborAtualIndex + 1}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <div className="text-6xl mb-4">🍕</div>
+          <div
+            className="mx-auto rounded-full border-4 border-white shadow-lg flex items-center justify-center"
+            style={{ width: 96, height: 96, backgroundColor: corAtual }}
+          >
+            <span className="text-3xl">🍕</span>
+          </div>
           <h2 className="text-4xl font-bold text-green-700">
             {saborAtual.sabor?.nome || 'Sabor não encontrado'}
           </h2>
