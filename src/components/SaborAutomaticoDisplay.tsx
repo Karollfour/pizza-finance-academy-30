@@ -129,42 +129,45 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
 
       {/* Histórico de Sabores Passados */}
       {saboresPassados.length > 0 && (
-        <Card className="shadow-lg border-2 border-amber-200">
-          <CardHeader>
-            <CardTitle className="text-amber-600">
+        <Card className="shadow-sm border border-amber-200">
+          <CardHeader className="py-2 px-3">
+            <CardTitle className="text-amber-600 text-sm">
               📜 Sabores Já Passados ({saboresPassados.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-48 overflow-y-auto">
-              {saboresPassados.map((sabor, index) => (
-                <div key={sabor.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-200">
-                  <div className="flex items-center space-x-3">
-                    <Badge variant="outline" className="bg-amber-100 text-amber-700">
-                      Pizza #{index + 1}
-                    </Badge>
-                    <div>
-                      <div className="font-medium text-amber-700">
-                        {sabor.sabor?.nome || 'Sabor não encontrado'}
-                      </div>
-                      {sabor.sabor?.descricao && (
-                        <div className="text-sm text-amber-600">
-                          {sabor.sabor.descricao}
+          <CardContent className="px-3 pb-3 pt-0">
+            <TooltipProvider delayDuration={100}>
+              <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                {[...saboresPassados]
+                  .map((sabor, idx) => ({ sabor, numero: idx + 1 }))
+                  .reverse()
+                  .map(({ sabor, numero }) => (
+                    <Tooltip key={sabor.id}>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1.5 px-1.5 py-1 bg-amber-50 rounded border border-amber-200 cursor-default">
+                          <span className="text-[10px] font-semibold text-amber-700">#{numero}</span>
+                          <span
+                            className="inline-block rounded-full border border-black/10"
+                            style={{
+                              width: 14,
+                              height: 14,
+                              backgroundColor: sabor.sabor?.cor || '#9CA3AF',
+                            }}
+                          />
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge className="bg-gray-500 text-white">
-                      ✅ Finalizado
-                    </Badge>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date(sabor.tempoFinalizado).toLocaleTimeString('pt-BR')}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        <div className="font-medium">{sabor.sabor?.nome || 'Sabor não encontrado'}</div>
+                        {sabor.tempoFinalizado && (
+                          <div className="text-[10px] opacity-70">
+                            {new Date(sabor.tempoFinalizado).toLocaleTimeString('pt-BR')}
+                          </div>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+              </div>
+            </TooltipProvider>
           </CardContent>
         </Card>
       )}
