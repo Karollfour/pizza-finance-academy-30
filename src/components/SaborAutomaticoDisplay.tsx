@@ -150,35 +150,34 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
           </CardHeader>
           <CardContent className="px-3 pb-3 pt-0">
             <TooltipProvider delayDuration={100}>
-              <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-                {[...saboresPassados]
+              <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
+                {saboresPassados
                   .map((sabor, idx) => ({ sabor, numero: idx + 1 }))
+                  .slice()
                   .reverse()
-                  .map(({ sabor, numero }) => (
-                    <Tooltip key={sabor.id}>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1.5 px-1.5 py-1 bg-amber-50 rounded border border-amber-200 cursor-default">
-                          <span className="text-[10px] font-semibold text-amber-700">#{numero}</span>
-                          <span
-                            className="inline-block rounded-full border border-black/10"
-                            style={{
-                              width: 14,
-                              height: 14,
-                              backgroundColor: sabor.sabor?.cor || '#9CA3AF',
-                            }}
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
-                        <div className="font-medium">{sabor.sabor?.nome || 'Sabor não encontrado'}</div>
-                        {sabor.tempoFinalizado && (
-                          <div className="text-[10px] opacity-70">
-                            {new Date(sabor.tempoFinalizado).toLocaleTimeString('pt-BR')}
+                  .map(({ sabor, numero }) => {
+                    const cor = sabor.sabor?.cor || '#9CA3AF';
+                    return (
+                      <Tooltip key={`${sabor.id}-${numero}`}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border border-black/10 cursor-default"
+                            style={{ backgroundColor: cor }}
+                          >
+                            {numero}
                           </div>
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          <div className="font-medium">{sabor.sabor?.nome || 'Sabor não encontrado'}</div>
+                          {sabor.tempoFinalizado && (
+                            <div className="text-[10px] opacity-70">
+                              {new Date(sabor.tempoFinalizado).toLocaleTimeString('pt-BR')}
+                            </div>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
               </div>
             </TooltipProvider>
           </CardContent>
