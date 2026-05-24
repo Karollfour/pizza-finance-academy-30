@@ -1,8 +1,8 @@
-
 import { memo, useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useHistoricoSaboresRodada } from '@/hooks/useHistoricoSaboresRodada';
+import { useSabores } from '@/hooks/useSabores';
 import { Rodada } from '@/types/database';
 
 interface HistoricoSaboresAutomaticoProps {
@@ -12,46 +12,37 @@ interface HistoricoSaboresAutomaticoProps {
 
 const HistoricoSaboresAutomatico = memo(({ rodada, numeroPizzas }: HistoricoSaboresAutomaticoProps) => {
   const { historico } = useHistoricoSaboresRodada(rodada?.id);
+  const { sabores } = useSabores();
   const [saboresFinalizadosEstavel, setSaboresFinalizadosEstavel] = useState<any[]>([]);
   const lastHistoricoRef = useRef<any[]>([]);
   const lastSaboresFinalizadosRef = useRef<any[]>([]);
 
-  // Função de formatação estável
   const formatarTempo = useCallback((segundos: number) => {
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }, []);
 
-  // Calcular intervalo de troca de forma estável
   const intervaloTroca = useMemo(() => {
     return rodada && numeroPizzas > 0 ? Math.floor(rodada.tempo_limite / numeroPizzas) : 0;
   }, [rodada?.tempo_limite, numeroPizzas]);
 
-  // Atualizar sabores finalizados apenas quando realmente necessário
   useEffect(() => {
     const handleSaborFinalizado = (event: CustomEvent) => {
       const { saboresPassados } = event.detail;
       if (saboresPassados && Array.isArray(saboresPassados)) {
-        // Só atualizar se realmente mudou
         const novosPassadosString = JSON.stringify(saboresPassados);
         const atualString = JSON.stringify(lastSaboresFinalizadosRef.current);
-        
         if (novosPassadosString !== atualString) {
           lastSaboresFinalizadosRef.current = saboresPassados;
           setSaboresFinalizadosEstavel([...saboresPassados]);
         }
       }
     };
-
     window.addEventListener('sabor-automatico-alterado', handleSaborFinalizado as EventListener);
-
-    return () => {
-      window.removeEventListener('sabor-automatico-alterado', handleSaborFinalizado as EventListener);
-    };
+    return () => window.removeEventListener('sabor-automatico-alterado', handleSaborFinalizado as EventListener);
   }, []);
 
-  // Atualizar historico apenas quando necessário
   useEffect(() => {
     if (!rodada || !historico.length) {
       if (saboresFinalizadosEstavel.length > 0) {
@@ -60,104 +51,80 @@ const HistoricoSaboresAutomatico = memo(({ rodada, numeroPizzas }: HistoricoSabo
       }
       return;
     }
-
-    // Só atualizar se o histórico realmente mudou
     const historicoString = JSON.stringify(historico);
     const lastHistoricoString = JSON.stringify(lastHistoricoRef.current);
-    
     if (historicoString !== lastHistoricoString) {
       lastHistoricoRef.current = [...historico];
     }
   }, [historico, rodada]);
 
-  // Estatísticas estáveis - só recalcular quando realmente necessário
-  const estatisticas = useMemo(() => ({
-    totalSabores: lastHistoricoRef.current.length,
-    finalizadas: saboresFinalizadosEstavel.length,
-    atual: saboresFinalizadosEstavel.length + 1,
-    intervaloFormatado: formatarTempo(intervaloTroca)
-  }), [saboresFinalizadosEstavel.length, lastHistoricoRef.current.length, intervaloTroca, formatarTempo]);
+  const getSaborCor = (item: any): string => {
+    if (item?.sabor?.cor) return item.sabor.cor;
+    const s = sabores.find(x => x.id === item?.sabor_id);
+    return (s as any)?.cor || '#9CA3AF';
+  };
+
+  const getSaborNome = (item: any): string => {
+    if (item?.sabor?.nome) return item.sabor.nome;
+    const s = sabores.find(x => x.id === item?.sabor_id);
+    return s?.nome || 'Sabor não encontrado';
+  };
+
+  // Numeração original + ordem decrescente (mais recente primeiro)
+  const itensRenderizados = useMemo(() => {
+    return saboresFinalizadosEstavel
+      .map((sabor, index) => ({ sabor, numero: index + 1 }))
+      .slice()
+      .reverse();
+  }, [saboresFinalizadosEstavel]);
 
   if (!rodada || lastHistoricoRef.current.length === 0) {
     return null;
   }
 
   return (
-    <Card className="shadow-lg border-2 border-amber-200 mb-8">
-      <CardHeader>
-        <CardTitle className="text-amber-600">
-          📋 Histórico de Sabores Automáticos - Rodada {rodada.numero}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Informações da sequência - estáveis */}
-          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-amber-600">{estatisticas.totalSabores}</div>
-                <div className="text-sm text-amber-700">Total de Pizzas</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-600">{estatisticas.finalizadas}</div>
-                <div className="text-sm text-green-700">Finalizadas</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-600">{estatisticas.atual}</div>
-                <div className="text-sm text-blue-700">Atual</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-purple-600">{estatisticas.intervaloFormatado}</div>
-                <div className="text-sm text-purple-700">Intervalo</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Lista de sabores finalizados - estável */}
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {saboresFinalizadosEstavel.map((sabor, index) => (
-              <div key={`finalizado-${sabor.id}-${index}`} className="flex items-center justify-between p-4 bg-white rounded-lg border border-amber-200 shadow-sm">
-                <div className="flex items-center space-x-4">
-                  <Badge variant="outline" className="bg-amber-100 text-amber-700 min-w-fit">
-                    Pizza #{index + 1}
-                  </Badge>
-                  <div className="text-6xl">🍕</div>
-                  <div>
-                    <div className="font-bold text-lg text-amber-700">
-                      {sabor.sabor?.nome || 'Sabor não encontrado'}
-                    </div>
-                    {sabor.sabor?.descricao && (
-                      <div className="text-sm text-amber-600">
-                        {sabor.sabor.descricao}
+    <TooltipProvider>
+      <Card className="shadow-md border border-amber-200 mb-4">
+        <CardHeader className="py-2 px-3">
+          <CardTitle className="text-amber-600 text-sm">
+            📋 Histórico — Rodada {rodada.numero} ({saboresFinalizadosEstavel.length}/{lastHistoricoRef.current.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-2 px-3">
+          {saboresFinalizadosEstavel.length === 0 && rodada.status === 'ativa' ? (
+            <p className="text-xs text-gray-400 text-center py-2">Nenhum sabor finalizado ainda...</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+              {itensRenderizados.map(({ sabor, numero }) => {
+                const cor = getSaborCor(sabor);
+                const nome = getSaborNome(sabor);
+                const horario = sabor.tempoFinalizado
+                  ? new Date(sabor.tempoFinalizado).toLocaleTimeString('pt-BR')
+                  : '--:--';
+                return (
+                  <Tooltip key={`fin-${sabor.id}-${numero}`}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm cursor-default border border-white"
+                        style={{ backgroundColor: cor }}
+                      >
+                        {numero}
                       </div>
-                    )}
-                    <div className="text-xs text-gray-500 mt-1">
-                      Duração: {formatarTempo(intervaloTroca)}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <Badge className="bg-green-500 text-white mb-2">
-                    ✅ Finalizado
-                  </Badge>
-                  <div className="text-sm text-gray-600">
-                    {sabor.tempoFinalizado ? new Date(sabor.tempoFinalizado).toLocaleTimeString('pt-BR') : '--:--'}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {saboresFinalizadosEstavel.length === 0 && rodada.status === 'ativa' && (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-4">⏳</div>
-              <p className="text-gray-500">Nenhum sabor finalizado ainda...</p>
-              <p className="text-sm text-gray-400">Os sabores aparecerão aqui conforme o tempo passa</p>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="text-xs">
+                        <div className="font-semibold">#{numero} — {nome}</div>
+                        <div className="text-muted-foreground">Finalizado: {horario}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
             </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 });
 
