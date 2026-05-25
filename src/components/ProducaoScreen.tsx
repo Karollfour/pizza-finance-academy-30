@@ -896,31 +896,18 @@ const ProducaoScreen = () => {
 
             {/* Histórico Visual da Rodada Atual - Apenas pizzas já produzidas */}
             {rodadaAtual?.status === 'ativa' && historico.length > 0 && saboresPassados.length > 0 && <div className="mt-6 pt-4 border-t border-orange-200">
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {saboresPassados.map((sabor, index) => {
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {[...saboresPassados].reverse().map((sabor, index) => {
               const saborNome = getSaborNome(sabor);
-              const cor = getSaborCorRodadaAtual(saborNome);
-              return <div key={sabor.id} className="relative group cursor-pointer transition-all duration-200" title={`Pizza #${index + 1}: ${saborNome}`}>
-                        <Card className="shadow-lg border-2 border-gray-300 opacity-80" style={{
-                  backgroundColor: cor
-                }}>
-                          <CardContent className="p-4 text-center">
-                            <Badge className="text-white text-xs px-2 py-1 mb-2 bg-zinc-800">
-                              #{index + 1}
-                            </Badge>
-                            <h4 className="text-2xl font-bold text-zinc-700">
-                              {saborNome.length > 12 ? saborNome.substring(0, 12) + '...' : saborNome}
-                            </h4>
-                          </CardContent>
-                        </Card>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
-                          Pizza #{index + 1}: {saborNome}
-                        </div>
-                        <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-500 rounded-full border-2 border-white">
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
-                          </div>
-                        </div>
+              const cor = getSaborCorRodadaAtual(saborNome) || '#9CA3AF';
+              const numero = saboresPassados.length - index;
+              return <div
+                        key={sabor.id ?? index}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white cursor-pointer"
+                        style={{ backgroundColor: cor }}
+                        title={`#${numero} - ${saborNome}`}
+                      >
+                        {numero}
                       </div>;
             })}
                 </div>
