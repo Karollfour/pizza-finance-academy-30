@@ -702,25 +702,26 @@ const ProducaoScreen = () => {
                   {rodadaAtual?.status === 'ativa' ? "Em Andamento" : rodadaAtual?.status === 'aguardando' ? "Aguardando" : rodadaAtual?.status === 'pausada' ? "Pausada" : "Finalizada"}
                 </Badge>
                 {rodadaAtual?.status === 'ativa' && <div className="flex gap-2">
-                    <Button onClick={handlePausarRodada} className="bg-orange-500 hover:bg-orange-600" size="sm">
-                      <Pause className="w-4 h-4 mr-1" />
+                    <Button onClick={handlePausarRodada} disabled={!!acaoEmAndamento} className="bg-orange-500 hover:bg-orange-600" size="sm">
+                      {acaoEmAndamento === 'pausar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Pause className="w-4 h-4 mr-1" />}
                       Pausar
                     </Button>
-                    <Button onClick={handleFinalizarRodada} className="bg-red-500 hover:bg-red-600" size="sm">
-                      <Square className="w-4 h-4 mr-1" />
+                    <Button onClick={handleFinalizarRodada} disabled={!!acaoEmAndamento} className="bg-red-500 hover:bg-red-600" size="sm">
+                      {acaoEmAndamento === 'finalizar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Square className="w-4 h-4 mr-1" />}
                       Encerrar
                     </Button>
                   </div>}
                 {rodadaAtual?.status === 'pausada' && <div className="flex gap-2">
-                    <Button onClick={handleRetomarRodada} className="bg-green-500 hover:bg-green-600" size="sm">
-                      <Play className="w-4 h-4 mr-1" />
+                    <Button onClick={handleRetomarRodada} disabled={!!acaoEmAndamento} className="bg-green-500 hover:bg-green-600" size="sm">
+                      {acaoEmAndamento === 'retomar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Play className="w-4 h-4 mr-1" />}
                       Retomar
                     </Button>
-                    <Button onClick={handleFinalizarRodada} className="bg-red-500 hover:bg-red-600" size="sm">
-                      <Square className="w-4 h-4 mr-1" />
+                    <Button onClick={handleFinalizarRodada} disabled={!!acaoEmAndamento} className="bg-red-500 hover:bg-red-600" size="sm">
+                      {acaoEmAndamento === 'finalizar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Square className="w-4 h-4 mr-1" />}
                       Encerrar
                     </Button>
                   </div>}
+
               </div>
             </CardTitle>
           </CardHeader>
