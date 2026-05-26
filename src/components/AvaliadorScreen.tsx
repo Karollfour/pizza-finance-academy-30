@@ -295,19 +295,20 @@ const AvaliadorScreen = () => {
                       <div className="flex gap-3">
                         <Button
                           onClick={() => handleEvaluation(pizza.id, true)}
-                          disabled={!!motivosReprovacao[pizza.id]}
+                          disabled={!!motivosReprovacao[pizza.id] || avaliandoIds.has(pizza.id)}
                           className="flex-1 bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
                         >
-                          ✅ Aprovar
+                          {avaliandoIds.has(pizza.id) ? '⏳ Avaliando...' : '✅ Aprovar'}
                         </Button>
                         <Button
                           onClick={() => handleEvaluation(pizza.id, false)}
-                          disabled={!motivosReprovacao[pizza.id]}
+                          disabled={!motivosReprovacao[pizza.id] || avaliandoIds.has(pizza.id)}
                           className="flex-1 bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
                         >
-                          ❌ Reprovar
+                          {avaliandoIds.has(pizza.id) ? '⏳ Avaliando...' : '❌ Reprovar'}
                         </Button>
                       </div>
+
 
                       {motivosReprovacao[pizza.id] ? (
                         <p className="text-sm text-orange-600 text-center">
