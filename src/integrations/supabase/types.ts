@@ -299,6 +299,7 @@ export type Database = {
           avaliada_em: string | null
           avaliado_por: string | null
           created_at: string
+          enviada_para_avaliacao: boolean
           equipe_id: string
           id: string
           justificativa_reprovacao: string | null
@@ -313,6 +314,7 @@ export type Database = {
           avaliada_em?: string | null
           avaliado_por?: string | null
           created_at?: string
+          enviada_para_avaliacao?: boolean
           equipe_id: string
           id?: string
           justificativa_reprovacao?: string | null
@@ -327,6 +329,7 @@ export type Database = {
           avaliada_em?: string | null
           avaliado_por?: string | null
           created_at?: string
+          enviada_para_avaliacao?: boolean
           equipe_id?: string
           id?: string
           justificativa_reprovacao?: string | null
