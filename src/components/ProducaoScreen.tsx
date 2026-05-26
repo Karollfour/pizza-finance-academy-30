@@ -247,6 +247,8 @@ const ProducaoScreen = () => {
     }
   };
   const handleCriarNovaRodada = async () => {
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('criar');
     try {
       // Verificar se pode criar nova rodada
       if (!podeIniciarNovaRodada()) {
@@ -261,33 +263,18 @@ const ProducaoScreen = () => {
       if (!configuracoesBloqueadas) {
         await handleSalvarConfiguracoes();
       }
-      console.log('Criando nova rodada com configurações salvas...', {
-        numero: proximoNumero,
-        tempo: tempoLimite,
-        pizzas: numeroPizzas
-      });
       const novaRodada = await criarNovaRodada(proximoNumero, tempoLimite);
       if (novaRodada?.id) {
         await salvarConfigRodada(novaRodada.id, numeroPizzas);
-
-        // Criar sequência de sabores automaticamente
-        console.log('Criando sequência de sabores...');
         await criarSequenciaParaRodada(novaRodada.id, numeroPizzas);
 
-        // Disparar evento para indicar que uma rodada foi criada
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('rodada-criada', {
-            detail: {
-              rodadaId: novaRodada.id,
-              numero: proximoNumero
-            }
+            detail: { rodadaId: novaRodada.id, numero: proximoNumero }
           }));
         }
 
-        // Forçar atualizações imediatas
         await Promise.all([refetchCounter(), refetchHistorico()]);
-
-        // Aguardar um pouco mais para garantir que tudo seja carregado
         setTimeout(() => {
           forceGlobalSync();
           refetchHistorico();
@@ -303,7 +290,11 @@ const ProducaoScreen = () => {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
+  };
+
   };
   const handleIniciarRodada = async () => {
     if (acaoEmAndamento) return;
