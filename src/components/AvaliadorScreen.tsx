@@ -16,8 +16,12 @@ const AvaliadorScreen = () => {
   const { rodadaAtual } = useRodadas();
   const { equipes } = useEquipes();
   const [equipeParaAvaliar, setEquipeParaAvaliar] = useState<string | null>(null);
-  const { pizzas, avaliarPizza } = usePizzas(equipeParaAvaliar || undefined, rodadaAtual?.id);
+  // IMPORTANTE: NÃO filtrar por rodadaAtual.id — pizzas pendentes devem permanecer visíveis
+  // mesmo após a rodada terminar, até serem avaliadas.
+  const { pizzas, avaliarPizza } = usePizzas(equipeParaAvaliar || undefined);
   const [motivosReprovacao, setMotivosReprovacao] = useState<{ [key: string]: string }>({});
+  const [avaliandoIds, setAvaliandoIds] = useState<Set<string>>(new Set());
+
 
   // Cores predefinidas para as equipes
   const coresEquipe = [
