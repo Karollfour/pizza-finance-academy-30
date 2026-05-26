@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Rodada } from '@/types/database';
 
 interface UseSynchronizedTimerOptions {
@@ -8,206 +7,127 @@ interface UseSynchronizedTimerOptions {
   warningThreshold?: number;
 }
 
+/**
+ * Timer sincronizado entre dispositivos.
+ * Fonte de verdade: rodada.iniciou_em + rodada.retomada_em + rodada.tempo_decorrido_acumulado.
+ *
+ * - status = 'ativa'      → restante = tempo_limite - tempo_decorrido_acumulado - (now - retomada_em||iniciou_em)
+ * - status = 'pausada'    → restante = tempo_limite - tempo_decorrido_acumulado  (congelado)
+ * - status = 'aguardando' → restante = tempo_limite (cheio)
+ * - status = 'finalizada' → restante = 0  (nunca dispara onTimeUp automaticamente)
+ *
+ * Proteção: se o usuário abrir uma rodada que já expirou (status ainda 'ativa' mas tempo<=0),
+ * o componente mostra 0 sem disparar onTimeUp — quem realmente finaliza é o professor.
+ */
 export const useSynchronizedTimer = (
-  rodada: Rodada | null, 
+  rodada: Rodada | null,
   options: UseSynchronizedTimerOptions = {}
 ) => {
+  const { onTimeUp, onWarning, warningThreshold = 30 } = options;
+
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [isActive, setIsActive] = useState(false);
   const [hasWarned, setHasWarned] = useState(false);
-  const [pausedTime, setPausedTime] = useState<number | null>(null);
+  const hasFiredTimeUpRef = useRef(false);
+  const mountedAtZeroRef = useRef(false);
 
-  const { 
-    onTimeUp, 
-    onWarning, 
-    warningThreshold = 30 
-  } = options;
+  const calculateTimeRemaining = useCallback((): number => {
+    if (!rodada || !rodada.tempo_limite) return 0;
 
-  // Calcular tempo restante com suporte a pausa
-  const calculateTimeRemaining = useCallback(() => {
-    if (!rodada || !rodada.tempo_limite) {
-      return 0;
+    const r = rodada as any;
+    const acumulado = Number(r.tempo_decorrido_acumulado || 0);
+    const tempoLimite = rodada.tempo_limite;
+
+    if (rodada.status === 'aguardando') return tempoLimite;
+    if (rodada.status === 'finalizada') return 0;
+    if (rodada.status === 'pausada') {
+      return Math.max(0, tempoLimite - acumulado);
     }
 
-    // Se a rodada está pausada, retornar o tempo que estava quando pausou
-    if (rodada.status === 'pausada' && pausedTime !== null) {
-      return pausedTime;
-    }
-
-    // Se não está ativa, retornar tempo total
-    if (rodada.status !== 'ativa' || !rodada.iniciou_em) {
-      return rodada.tempo_limite;
-    }
-
+    // ativa
+    const baseIso = r.retomada_em || rodada.iniciou_em;
+    if (!baseIso) return tempoLimite;
     try {
-      const now = new Date().getTime();
-      const startTime = new Date(rodada.iniciou_em).getTime();
-      const duration = rodada.tempo_limite * 1000;
-      const elapsed = now - startTime;
-      const remaining = Math.max(0, duration - elapsed);
-      
-      return Math.floor(remaining / 1000);
-    } catch (error) {
-      console.error('Erro ao calcular tempo restante:', error);
+      const base = new Date(baseIso).getTime();
+      const now = Date.now();
+      const elapsedAtual = Math.max(0, Math.floor((now - base) / 1000));
+      const remaining = tempoLimite - acumulado - elapsedAtual;
+      return Math.max(0, remaining);
+    } catch {
       return 0;
     }
-  }, [rodada?.id, rodada?.status, rodada?.iniciou_em, rodada?.tempo_limite, pausedTime]);
+  }, [rodada]);
 
-  // Gerenciar estado da pausa
+  // Detectar troca de rodada → resetar guardas
   useEffect(() => {
-    if (!rodada) {
-      setPausedTime(null);
-      return;
+    hasFiredTimeUpRef.current = false;
+    mountedAtZeroRef.current = false;
+    setHasWarned(false);
+    const initial = calculateTimeRemaining();
+    setTimeRemaining(initial);
+    // Se já entrou em 0 numa rodada 'ativa', marcar para NÃO disparar onTimeUp automaticamente
+    if (initial <= 0 && rodada?.status === 'ativa') {
+      mountedAtZeroRef.current = true;
+      hasFiredTimeUpRef.current = true;
     }
+  }, [rodada?.id]);
 
-    if (rodada.status === 'pausada' && pausedTime === null) {
-      // Rodada foi pausada agora - salvar o tempo atual
-      const currentTime = calculateTimeRemaining();
-      setPausedTime(currentTime);
-      console.log('Rodada pausada, tempo salvo:', currentTime);
-    } else if (rodada.status === 'ativa' && pausedTime !== null) {
-      // Rodada foi retomada - limpar tempo pausado
-      setPausedTime(null);
-      console.log('Rodada retomada, tempo pausado limpo');
-    } else if (rodada.status === 'finalizada' || rodada.status === 'aguardando') {
-      // Rodada finalizada ou aguardando - limpar estado
-      setPausedTime(null);
-    }
-  }, [rodada?.status, rodada?.id]);
-
-  // Timer principal
+  // Tick principal
   useEffect(() => {
     if (!rodada) {
       setTimeRemaining(0);
-      setIsActive(false);
-      setHasWarned(false);
       return;
     }
 
-    // Se está pausada, usar o tempo pausado
-    if (rodada.status === 'pausada') {
-      setIsActive(false);
-      const currentTime = pausedTime !== null ? pausedTime : calculateTimeRemaining();
-      setTimeRemaining(currentTime);
+    // Atualizar imediatamente ao trocar status
+    const initial = calculateTimeRemaining();
+    setTimeRemaining(initial);
+
+    if (rodada.status !== 'ativa') {
       return;
     }
 
-    // Se não está ativa, mostrar tempo total ou zero
-    if (rodada.status !== 'ativa' || !rodada.iniciou_em) {
-      setTimeRemaining(rodada.status === 'aguardando' ? rodada.tempo_limite : 0);
-      setIsActive(false);
-      setHasWarned(false);
-      return;
-    }
-
-    setIsActive(true);
-    
-    // Atualizar imediatamente
-    const remaining = calculateTimeRemaining();
-    setTimeRemaining(remaining);
-    
-    // Resetar warning quando o tempo muda
-    if (remaining > warningThreshold) {
-      setHasWarned(false);
-    }
-
-    // Timer com interval
     const intervalId = setInterval(() => {
-      const currentRemaining = calculateTimeRemaining();
-      setTimeRemaining(currentRemaining);
+      const remaining = calculateTimeRemaining();
+      setTimeRemaining(remaining);
 
-      // Warning threshold
-      if (!hasWarned && currentRemaining <= warningThreshold && currentRemaining > 0) {
+      if (!hasWarned && remaining > 0 && remaining <= warningThreshold) {
         setHasWarned(true);
-        onWarning?.(currentRemaining);
+        onWarning?.(remaining);
       }
 
-      // Time up
-      if (currentRemaining <= 0) {
-        setIsActive(false);
+      if (remaining <= 0 && !hasFiredTimeUpRef.current) {
+        hasFiredTimeUpRef.current = true;
         clearInterval(intervalId);
-        onTimeUp?.();
+        // Só dispara se NÃO montou já zerado (proteção contra rodada expirada)
+        if (!mountedAtZeroRef.current) {
+          onTimeUp?.();
+        }
       }
     }, 1000);
 
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [rodada?.id, rodada?.status, rodada?.tempo_limite, rodada?.iniciou_em, calculateTimeRemaining, onTimeUp, onWarning, warningThreshold, hasWarned, pausedTime]);
+    return () => clearInterval(intervalId);
+  }, [rodada?.id, rodada?.status, rodada?.tempo_limite, (rodada as any)?.retomada_em, (rodada as any)?.tempo_decorrido_acumulado, rodada?.iniciou_em, calculateTimeRemaining, hasWarned, onTimeUp, onWarning, warningThreshold]);
 
-  // Escutar eventos globais de rodada
+  // Re-sincronizar quando a aba volta ao foco
   useEffect(() => {
-    const handleRodadaEvent = (event: CustomEvent) => {
-      console.log('Timer recebeu evento de rodada:', event.type);
-      
-      if (event.type === 'rodada-pausada') {
-        // Salvar tempo atual quando pausar
-        const currentTime = calculateTimeRemaining();
-        setPausedTime(currentTime);
-        console.log('Evento pausa - tempo salvo:', currentTime);
-      } else if (event.type === 'rodada-iniciada') {
-        // Limpar tempo pausado quando iniciar/retomar
-        setPausedTime(null);
-        console.log('Evento início - tempo pausado limpo');
-      }
-      
-      // Recalcular tempo
-      const remaining = calculateTimeRemaining();
-      setTimeRemaining(remaining);
-      
-      // Resetar warning se necessário
-      if (remaining > warningThreshold) {
-        setHasWarned(false);
+    const sync = () => {
+      if (document.visibilityState === 'visible') {
+        setTimeRemaining(calculateTimeRemaining());
       }
     };
-
-    window.addEventListener('rodada-iniciada', handleRodadaEvent as EventListener);
-    window.addEventListener('rodada-finalizada', handleRodadaEvent as EventListener);
-    window.addEventListener('rodada-pausada', handleRodadaEvent as EventListener);
-    window.addEventListener('rodada-updated', handleRodadaEvent as EventListener);
-    window.addEventListener('rodada-tempo-alterado', handleRodadaEvent as EventListener);
-
+    document.addEventListener('visibilitychange', sync);
+    window.addEventListener('pageshow', sync);
     return () => {
-      window.removeEventListener('rodada-iniciada', handleRodadaEvent as EventListener);
-      window.removeEventListener('rodada-finalizada', handleRodadaEvent as EventListener);
-      window.removeEventListener('rodada-pausada', handleRodadaEvent as EventListener);
-      window.removeEventListener('rodada-updated', handleRodadaEvent as EventListener);
-      window.removeEventListener('rodada-tempo-alterado', handleRodadaEvent as EventListener);
+      document.removeEventListener('visibilitychange', sync);
+      window.removeEventListener('pageshow', sync);
     };
-  }, [calculateTimeRemaining, warningThreshold]);
-
-  // Sincronização quando a página volta ao foco
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isActive) {
-        const remaining = calculateTimeRemaining();
-        setTimeRemaining(remaining);
-        console.log('Timer sincronizado após foco:', remaining, 'segundos');
-      }
-    };
-
-    const handlePageShow = () => {
-      if (isActive) {
-        const remaining = calculateTimeRemaining();
-        setTimeRemaining(remaining);
-        console.log('Timer sincronizado após pageshow:', remaining, 'segundos');
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pageshow', handlePageShow);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pageshow', handlePageShow);
-    };
-  }, [isActive, calculateTimeRemaining]);
+  }, [calculateTimeRemaining]);
 
   const formatTime = (seconds: number) => {
-    const validSeconds = Math.max(0, Math.floor(seconds));
-    const mins = Math.floor(validSeconds / 60);
-    const secs = validSeconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const valid = Math.max(0, Math.floor(seconds));
+    const m = Math.floor(valid / 60).toString().padStart(2, '0');
+    const s = (valid % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   };
 
   const getTimeColor = () => {
@@ -225,14 +145,15 @@ export const useSynchronizedTimer = (
 
   return {
     timeRemaining,
-    isActive: isActive && rodada?.status === 'ativa',
+    isActive: rodada?.status === 'ativa' && timeRemaining > 0,
     isPaused: rodada?.status === 'pausada',
-    pausedTime,
+    isExpired: rodada?.status === 'ativa' && timeRemaining <= 0,
+    pausedTime: rodada?.status === 'pausada' ? timeRemaining : null,
     formatTime,
     getTimeColor,
     getProgressPercentage,
     formattedTime: formatTime(timeRemaining),
     timeColor: getTimeColor(),
-    progressPercentage: getProgressPercentage()
+    progressPercentage: getProgressPercentage(),
   };
 };
