@@ -16,8 +16,12 @@ const AvaliadorScreen = () => {
   const { rodadaAtual } = useRodadas();
   const { equipes } = useEquipes();
   const [equipeParaAvaliar, setEquipeParaAvaliar] = useState<string | null>(null);
-  const { pizzas, avaliarPizza } = usePizzas(equipeParaAvaliar || undefined, rodadaAtual?.id);
+  // IMPORTANTE: NÃO filtrar por rodadaAtual.id — pizzas pendentes devem permanecer visíveis
+  // mesmo após a rodada terminar, até serem avaliadas.
+  const { pizzas, avaliarPizza } = usePizzas(equipeParaAvaliar || undefined);
   const [motivosReprovacao, setMotivosReprovacao] = useState<{ [key: string]: string }>({});
+  const [avaliandoIds, setAvaliandoIds] = useState<Set<string>>(new Set());
+
 
   // Cores predefinidas para as equipes
   const coresEquipe = [
@@ -58,6 +62,8 @@ const AvaliadorScreen = () => {
   };
 
   const handleEvaluation = async (pizzaId: string, approved: boolean) => {
+    if (avaliandoIds.has(pizzaId)) return; // proteção contra clique duplo
+    setAvaliandoIds(prev => new Set(prev).add(pizzaId));
     try {
       const justificativa = approved ? 'Pizza aprovada!' : motivosReprovacao[pizzaId] || '';
       
@@ -68,7 +74,6 @@ const AvaliadorScreen = () => {
         'Avaliador'
       );
 
-      // Limpar motivo de reprovação
       const newMotivos = { ...motivosReprovacao };
       delete newMotivos[pizzaId];
       setMotivosReprovacao(newMotivos);
@@ -76,8 +81,15 @@ const AvaliadorScreen = () => {
       toast.success(`Pizza ${approved ? 'aprovada' : 'reprovada'} com sucesso!`);
     } catch (error) {
       toast.error('Erro ao avaliar pizza');
+    } finally {
+      setAvaliandoIds(prev => {
+        const n = new Set(prev);
+        n.delete(pizzaId);
+        return n;
+      });
     }
   };
+
 
   const updateMotivoReprovacao = (pizzaId: string, motivo: string) => {
     setMotivosReprovacao({
@@ -283,19 +295,20 @@ const AvaliadorScreen = () => {
                       <div className="flex gap-3">
                         <Button
                           onClick={() => handleEvaluation(pizza.id, true)}
-                          disabled={!!motivosReprovacao[pizza.id]}
+                          disabled={!!motivosReprovacao[pizza.id] || avaliandoIds.has(pizza.id)}
                           className="flex-1 bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
                         >
-                          ✅ Aprovar
+                          {avaliandoIds.has(pizza.id) ? '⏳ Avaliando...' : '✅ Aprovar'}
                         </Button>
                         <Button
                           onClick={() => handleEvaluation(pizza.id, false)}
-                          disabled={!motivosReprovacao[pizza.id]}
+                          disabled={!motivosReprovacao[pizza.id] || avaliandoIds.has(pizza.id)}
                           className="flex-1 bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
                         >
-                          ❌ Reprovar
+                          {avaliandoIds.has(pizza.id) ? '⏳ Avaliando...' : '❌ Reprovar'}
                         </Button>
                       </div>
+
 
                       {motivosReprovacao[pizza.id] ? (
                         <p className="text-sm text-orange-600 text-center">
@@ -340,8 +353,9 @@ const AvaliadorScreen = () => {
                               Pedido #{getNumeroPedido(pizza)} • Pizza #{pizza.id.slice(-6)} • Sabor: {getSaborPizza(pizza)} • Rodada {rodadaAtual?.numero || 'N/A'}
                             </p>
                             <p className="text-xs text-gray-500">
-                              Avaliada: {new Date(pizza.updated_at).toLocaleString('pt-BR')}
+                              Avaliada: {new Date(((pizza as any).avaliada_em) || pizza.updated_at).toLocaleString('pt-BR')}
                             </p>
+
                           </div>
                         </div>
                         <div className="text-right">

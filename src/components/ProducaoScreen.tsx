@@ -88,6 +88,11 @@ const ProducaoScreen = () => {
   // Persistir estado da aba ativa - controle como padrão
   const [activeTab, setActiveTab] = usePersistedState('producao-active-tab', 'controle');
 
+  // Proteção contra clique duplo em ações críticas
+  const [acaoEmAndamento, setAcaoEmAndamento] = useState<null | 'iniciar' | 'pausar' | 'retomar' | 'finalizar' | 'criar'>(null);
+
+
+
   // Estados persistidos para controle do carrossel - AGORA PERSISTIDOS
   const [tempoLimite, setTempoLimite] = usePersistedState('config-tempo-limite', 300);
   const [numeroPizzas, setNumeroPizzas] = usePersistedState('config-numero-pizzas', 10);
@@ -242,6 +247,8 @@ const ProducaoScreen = () => {
     }
   };
   const handleCriarNovaRodada = async () => {
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('criar');
     try {
       // Verificar se pode criar nova rodada
       if (!podeIniciarNovaRodada()) {
@@ -256,33 +263,18 @@ const ProducaoScreen = () => {
       if (!configuracoesBloqueadas) {
         await handleSalvarConfiguracoes();
       }
-      console.log('Criando nova rodada com configurações salvas...', {
-        numero: proximoNumero,
-        tempo: tempoLimite,
-        pizzas: numeroPizzas
-      });
       const novaRodada = await criarNovaRodada(proximoNumero, tempoLimite);
       if (novaRodada?.id) {
         await salvarConfigRodada(novaRodada.id, numeroPizzas);
-
-        // Criar sequência de sabores automaticamente
-        console.log('Criando sequência de sabores...');
         await criarSequenciaParaRodada(novaRodada.id, numeroPizzas);
 
-        // Disparar evento para indicar que uma rodada foi criada
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('rodada-criada', {
-            detail: {
-              rodadaId: novaRodada.id,
-              numero: proximoNumero
-            }
+            detail: { rodadaId: novaRodada.id, numero: proximoNumero }
           }));
         }
 
-        // Forçar atualizações imediatas
         await Promise.all([refetchCounter(), refetchHistorico()]);
-
-        // Aguardar um pouco mais para garantir que tudo seja carregado
         setTimeout(() => {
           forceGlobalSync();
           refetchHistorico();
@@ -298,9 +290,15 @@ const ProducaoScreen = () => {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
+
   const handleIniciarRodada = async () => {
+
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('iniciar');
     try {
       // Verificar se pode iniciar nova rodada
       if (!podeIniciarNovaRodada()) {
@@ -311,15 +309,14 @@ const ProducaoScreen = () => {
         return;
       }
 
-      // Se há uma rodada aguardando, iniciar ela
-      if (rodadaAtual?.status === 'aguardando') {
-        console.log('Iniciando rodada existente...');
+      // Se há uma rodada aguardando OU pausada, iniciar/retomar ela
+      if (rodadaAtual?.status === 'aguardando' || rodadaAtual?.status === 'pausada') {
         await iniciarRodada(rodadaAtual.id);
         setTimeout(() => {
           forceGlobalSync();
           refetchRodadas();
         }, 500);
-        toast.success(`🚀 Rodada ${rodadaAtual.numero} iniciada!`, {
+        toast.success(`🚀 Rodada ${rodadaAtual.numero} ${rodadaAtual.status === 'pausada' ? 'retomada' : 'iniciada'}!`, {
           duration: 3000,
           position: 'top-center'
         });
@@ -336,13 +333,10 @@ const ProducaoScreen = () => {
       }
 
       // Criar nova rodada usando configurações salvas e iniciar
-      console.log('Criando e iniciando nova rodada com configurações salvas...');
       const novaRodada = await criarNovaRodada(proximoNumero, tempoLimite);
       if (novaRodada?.id) {
         await salvarConfigRodada(novaRodada.id, numeroPizzas);
         await criarSequenciaParaRodada(novaRodada.id, numeroPizzas);
-
-        // Iniciar imediatamente após criar
         await iniciarRodada(novaRodada.id);
         await Promise.all([refetchCounter(), refetchHistorico()]);
         setTimeout(() => {
@@ -361,11 +355,16 @@ const ProducaoScreen = () => {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
   const handleFinalizarRodada = async () => {
     if (!rodadaAtual) return;
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('finalizar');
     try {
+
       console.log('Finalizando rodada...');
       await finalizarRodada(rodadaAtual.id);
       await refetchCounter();
@@ -407,50 +406,51 @@ const ProducaoScreen = () => {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
   const handlePausarRodada = async () => {
     if (!rodadaAtual) return;
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('pausar');
     try {
-      console.log('Pausando rodada...');
       await pausarRodada(rodadaAtual.id);
       setTimeout(() => {
         forceGlobalSync();
         refetchRodadas();
       }, 500);
-      toast.success('⏸️ Rodada pausada!', {
-        duration: 3000,
-        position: 'top-center'
-      });
     } catch (error) {
       console.error('Erro ao pausar rodada:', error);
       toast.error('Erro ao pausar rodada. Tente novamente.', {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
   const handleRetomarRodada = async () => {
     if (!rodadaAtual) return;
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('retomar');
     try {
-      console.log('Retomando rodada...');
       await iniciarRodada(rodadaAtual.id);
       setTimeout(() => {
         forceGlobalSync();
         refetchRodadas();
       }, 500);
-      toast.success('▶️ Rodada retomada!', {
-        duration: 3000,
-        position: 'top-center'
-      });
     } catch (error) {
       console.error('Erro ao retomar rodada:', error);
       toast.error('Erro ao retomar rodada. Tente novamente.', {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
+
   const adicionarMinutos = async (minutos: number) => {
     if (!rodadaAtual) return;
     try {
@@ -667,19 +667,20 @@ const ProducaoScreen = () => {
             </div>
 
             <div className="flex justify-center gap-4 mt-8">
-              <Button onClick={handleCriarNovaRodada} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || !podeIniciarNovaRodada()} size="lg">
-                {loadingSequencia ? <>
+              <Button onClick={handleCriarNovaRodada} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || !podeIniciarNovaRodada() || !!acaoEmAndamento} size="lg">
+                {(loadingSequencia || acaoEmAndamento === 'criar') ? <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     Criando Rodada...
                   </> : !podeIniciarNovaRodada() ? <>🏁 Limite de Rodadas Atingido</> : <>🎯 Criar Rodada</>}
               </Button>
               
-              <Button onClick={handleIniciarRodada} className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || rodadaAtual && rodadaAtual.status === 'ativa' || !configuracoesBloqueadas && !rodadaAtual} size="lg">
-                {loadingSequencia ? <>
+              <Button onClick={handleIniciarRodada} className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || (rodadaAtual && rodadaAtual.status === 'ativa') || (!configuracoesBloqueadas && !rodadaAtual) || !!acaoEmAndamento} size="lg">
+                {(loadingSequencia || acaoEmAndamento === 'iniciar') ? <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Criando...
+                    Iniciando...
                   </> : rodadaAtual?.status === 'ativa' ? <>⏸️ Rodada em Andamento</> : rodadaAtual?.status === 'aguardando' ? <>🚀 Iniciar Rodada {rodadaAtual.numero}</> : !configuracoesBloqueadas ? <>⚠️ Crie a primeira rodada</> : <>🚀 Iniciar Rodada</>}
               </Button>
+
             </div>
 
             {configuracoesBloqueadas && <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -702,25 +703,26 @@ const ProducaoScreen = () => {
                   {rodadaAtual?.status === 'ativa' ? "Em Andamento" : rodadaAtual?.status === 'aguardando' ? "Aguardando" : rodadaAtual?.status === 'pausada' ? "Pausada" : "Finalizada"}
                 </Badge>
                 {rodadaAtual?.status === 'ativa' && <div className="flex gap-2">
-                    <Button onClick={handlePausarRodada} className="bg-orange-500 hover:bg-orange-600" size="sm">
-                      <Pause className="w-4 h-4 mr-1" />
+                    <Button onClick={handlePausarRodada} disabled={!!acaoEmAndamento} className="bg-orange-500 hover:bg-orange-600" size="sm">
+                      {acaoEmAndamento === 'pausar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Pause className="w-4 h-4 mr-1" />}
                       Pausar
                     </Button>
-                    <Button onClick={handleFinalizarRodada} className="bg-red-500 hover:bg-red-600" size="sm">
-                      <Square className="w-4 h-4 mr-1" />
+                    <Button onClick={handleFinalizarRodada} disabled={!!acaoEmAndamento} className="bg-red-500 hover:bg-red-600" size="sm">
+                      {acaoEmAndamento === 'finalizar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Square className="w-4 h-4 mr-1" />}
                       Encerrar
                     </Button>
                   </div>}
                 {rodadaAtual?.status === 'pausada' && <div className="flex gap-2">
-                    <Button onClick={handleRetomarRodada} className="bg-green-500 hover:bg-green-600" size="sm">
-                      <Play className="w-4 h-4 mr-1" />
+                    <Button onClick={handleRetomarRodada} disabled={!!acaoEmAndamento} className="bg-green-500 hover:bg-green-600" size="sm">
+                      {acaoEmAndamento === 'retomar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Play className="w-4 h-4 mr-1" />}
                       Retomar
                     </Button>
-                    <Button onClick={handleFinalizarRodada} className="bg-red-500 hover:bg-red-600" size="sm">
-                      <Square className="w-4 h-4 mr-1" />
+                    <Button onClick={handleFinalizarRodada} disabled={!!acaoEmAndamento} className="bg-red-500 hover:bg-red-600" size="sm">
+                      {acaoEmAndamento === 'finalizar' ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"/> : <Square className="w-4 h-4 mr-1" />}
                       Encerrar
                     </Button>
                   </div>}
+
               </div>
             </CardTitle>
           </CardHeader>
@@ -755,7 +757,7 @@ const ProducaoScreen = () => {
         </Card>}
 
       {/* Carrossel de Sabores - MODIFICADO: mostrar sempre que há rodada ativa ou aguardando e historico existe */}
-      {historico.length > 0 && rodadaAtual && (rodadaAtual.status === 'ativa' || rodadaAtual.status === 'aguardando') && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
+      {historico.length > 0 && rodadaAtual && (rodadaAtual.status === 'ativa' || rodadaAtual.status === 'aguardando' || rodadaAtual.status === 'pausada') && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-xl font-bold text-orange-600">🍕 Carrossel de Sabores</span>

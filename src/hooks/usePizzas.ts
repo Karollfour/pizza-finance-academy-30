@@ -95,6 +95,7 @@ export const usePizzas = (equipeId?: string, rodadaId?: string) => {
   const avaliarPizza = async (pizzaId: string, resultado: 'aprovada' | 'reprovada', justificativa?: string, avaliador?: string) => {
     try {
       console.log('Avaliando pizza:', { pizzaId, resultado, justificativa });
+      const agora = new Date().toISOString();
       
       const { error } = await supabase
         .from('pizzas')
@@ -103,8 +104,9 @@ export const usePizzas = (equipeId?: string, rodadaId?: string) => {
           resultado,
           justificativa_reprovacao: justificativa,
           avaliado_por: avaliador,
-          updated_at: new Date().toISOString()
-        })
+          avaliada_em: agora,
+          updated_at: agora,
+        } as any)
         .eq('id', pizzaId);
 
       if (error) {
@@ -122,7 +124,7 @@ export const usePizzas = (equipeId?: string, rodadaId?: string) => {
             resultado,
             justificativa,
             avaliador,
-            timestamp: new Date().toISOString() 
+            timestamp: agora,
           } 
         }));
       }
@@ -136,8 +138,9 @@ export const usePizzas = (equipeId?: string, rodadaId?: string) => {
               resultado, 
               justificativa_reprovacao: justificativa,
               avaliado_por: avaliador,
-              updated_at: new Date().toISOString()
-            }
+              avaliada_em: agora,
+              updated_at: agora,
+            } as any
           : pizza
       ));
       
@@ -146,6 +149,7 @@ export const usePizzas = (equipeId?: string, rodadaId?: string) => {
       throw err;
     }
   };
+
 
   const cleanupChannel = () => {
     if (channelRef.current && isSubscribedRef.current) {

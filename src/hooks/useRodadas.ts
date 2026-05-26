@@ -30,6 +30,7 @@ export const useRodadas = () => {
     }
   };
 
+
   const obterProximoNumeroRodada = async () => {
     try {
       console.log('Obtendo próximo número da rodada...');
@@ -120,20 +121,35 @@ export const useRodadas = () => {
 
   const iniciarRodada = async (rodadaId: string) => {
     try {
+      const { data: atual } = await supabase
+        .from('rodadas')
+        .select('*')
+        .eq('id', rodadaId)
+        .single();
+
+      const agora = new Date().toISOString();
+      const isResume = atual?.status === 'pausada';
+
+      const updatePayload: any = isResume
+        ? { status: 'ativa', retomada_em: agora, pausada_em: null }
+        : {
+            status: 'ativa',
+            iniciou_em: agora,
+            retomada_em: agora,
+            pausada_em: null,
+            tempo_decorrido_acumulado: 0,
+          };
+
       const { error } = await supabase
         .from('rodadas')
-        .update({
-          status: 'ativa',
-          iniciou_em: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq('id', rodadaId);
 
       if (error) throw error;
       
-      // Dispatch evento global para sincronização
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('rodada-iniciada', {
-          detail: { rodadaId, timestamp: new Date().toISOString() }
+          detail: { rodadaId, timestamp: agora }
         }));
       }
       
@@ -146,19 +162,37 @@ export const useRodadas = () => {
 
   const pausarRodada = async (rodadaId: string) => {
     try {
+      const { data: atual } = await supabase
+        .from('rodadas')
+        .select('*')
+        .eq('id', rodadaId)
+        .single();
+
+      const acumuladoAnterior = Number((atual as any)?.tempo_decorrido_acumulado || 0);
+      const baseIso = (atual as any)?.retomada_em || atual?.iniciou_em;
+      const elapsedAtual = baseIso
+        ? Math.max(0, Math.floor((Date.now() - new Date(baseIso).getTime()) / 1000))
+        : 0;
+      const novoAcumulado = Math.min(
+        (atual?.tempo_limite || 0),
+        acumuladoAnterior + elapsedAtual
+      );
+
+      const agora = new Date().toISOString();
       const { error } = await supabase
         .from('rodadas')
         .update({
-          status: 'pausada'
+          status: 'pausada',
+          pausada_em: agora,
+          tempo_decorrido_acumulado: novoAcumulado,
         })
         .eq('id', rodadaId);
 
       if (error) throw error;
       
-      // Dispatch evento global para sincronização
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('rodada-pausada', {
-          detail: { rodadaId, timestamp: new Date().toISOString() }
+          detail: { rodadaId, timestamp: agora }
         }));
       }
       
@@ -168,6 +202,7 @@ export const useRodadas = () => {
       throw err;
     }
   };
+
 
   const finalizarRodada = async (rodadaId: string) => {
     try {
@@ -313,6 +348,15 @@ export const useRodadas = () => {
   useEffect(() => {
     fetchRodadaAtual();
   }, []);
+
+  // Fallback de re-fetch a cada 10s (caso realtime caia)
+  useEffect(() => {
+    const id = setInterval(() => {
+      fetchRodadaAtual();
+    }, 10000);
+    return () => clearInterval(id);
+  }, []);
+
 
   return {
     rodadaAtual,

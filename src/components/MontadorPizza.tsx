@@ -320,6 +320,14 @@ const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }
             </div>
           )}
 
+          {rodadaAtual?.status === 'pausada' && (
+            <div className="p-3 bg-orange-50 rounded-lg">
+              <p className="text-orange-700 text-sm text-center font-medium">
+                ⏸️ Rodada pausada pelo professor. Aguarde para confirmar pizzas.
+              </p>
+            </div>
+          )}
+
           {/* Botão Confirmar */}
           <Button
             onClick={confirmarPizza}
@@ -329,12 +337,14 @@ const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }
               calcularPrecoTotal() > saldoDisponivel || 
               montandoPizza || 
               produtosDisponiveis.length === 0 ||
-              saboresDisponiveis.length === 0
+              saboresDisponiveis.length === 0 ||
+              rodadaAtual?.status !== 'ativa'
             }
             className="w-full h-14 text-lg bg-green-500 hover:bg-green-600"
           >
-            {montandoPizza ? '🔄 Montando Pizza...' : '🍕 Confirmar Pizza'}
+            {montandoPizza ? '🔄 Montando Pizza...' : rodadaAtual?.status === 'pausada' ? '⏸️ Rodada Pausada' : '🍕 Confirmar Pizza'}
           </Button>
+
         </div>
       </CardContent>
     </Card>
