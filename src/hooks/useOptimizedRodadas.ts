@@ -152,42 +152,49 @@ export const useOptimizedRodadas = () => {
 
   const iniciarRodada = async (rodadaId: string) => {
     try {
+      // Buscar estado atual para decidir entre "iniciar fresh" e "retomar"
+      const { data: atual } = await supabase
+        .from('rodadas')
+        .select('*')
+        .eq('id', rodadaId)
+        .single();
+
+      const agora = new Date().toISOString();
+      const isResume = atual?.status === 'pausada';
+
+      const updatePayload: any = isResume
+        ? {
+            status: 'ativa',
+            retomada_em: agora,
+            pausada_em: null,
+          }
+        : {
+            status: 'ativa',
+            iniciou_em: agora,
+            retomada_em: agora,
+            pausada_em: null,
+            tempo_decorrido_acumulado: 0,
+          };
+
       const { error } = await supabase
         .from('rodadas')
-        .update({
-          status: 'ativa',
-          iniciou_em: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq('id', rodadaId);
 
       if (error) throw error;
       
-      // Fetch imediato para atualizar estado local
       await fetchRodadaAtual(true);
       
-      // Forçar atualização global imediata
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('rodada-iniciada', { 
-          detail: { 
-            rodadaId,
-            timestamp: new Date().toISOString() 
-          } 
+          detail: { rodadaId, timestamp: agora } 
         }));
-        
-        // Forçar refresh global para todas as telas
         window.dispatchEvent(new CustomEvent('global-data-changed', { 
-          detail: { 
-            table: 'rodadas',
-            action: 'iniciada',
-            timestamp: Date.now() 
-          } 
+          detail: { table: 'rodadas', action: isResume ? 'retomada' : 'iniciada', timestamp: Date.now() } 
         }));
       }
       
-      toast.success('🚀 Rodada iniciada!', {
-        duration: 2000,
-      });
-      
+      toast.success(isResume ? '▶️ Rodada retomada!' : '🚀 Rodada iniciada!', { duration: 2000 });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao iniciar rodada');
       throw err;
@@ -196,46 +203,53 @@ export const useOptimizedRodadas = () => {
 
   const pausarRodada = async (rodadaId: string) => {
     try {
+      // Calcular tempo acumulado até esta pausa
+      const { data: atual } = await supabase
+        .from('rodadas')
+        .select('*')
+        .eq('id', rodadaId)
+        .single();
+
+      const acumuladoAnterior = Number((atual as any)?.tempo_decorrido_acumulado || 0);
+      const baseIso = (atual as any)?.retomada_em || atual?.iniciou_em;
+      const elapsedAtual = baseIso
+        ? Math.max(0, Math.floor((Date.now() - new Date(baseIso).getTime()) / 1000))
+        : 0;
+      const novoAcumulado = Math.min(
+        (atual?.tempo_limite || 0),
+        acumuladoAnterior + elapsedAtual
+      );
+
+      const agora = new Date().toISOString();
       const { error } = await supabase
         .from('rodadas')
         .update({
-          status: 'pausada'
+          status: 'pausada',
+          pausada_em: agora,
+          tempo_decorrido_acumulado: novoAcumulado,
         })
         .eq('id', rodadaId);
 
       if (error) throw error;
       
-      // Fetch imediato para atualizar estado local
       await fetchRodadaAtual(true);
       
-      // Forçar atualização global imediata
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('rodada-pausada', { 
-          detail: { 
-            rodadaId,
-            timestamp: new Date().toISOString() 
-          } 
+          detail: { rodadaId, timestamp: agora } 
         }));
-        
-        // Forçar refresh global para todas as telas
         window.dispatchEvent(new CustomEvent('global-data-changed', { 
-          detail: { 
-            table: 'rodadas',
-            action: 'pausada',
-            timestamp: Date.now() 
-          } 
+          detail: { table: 'rodadas', action: 'pausada', timestamp: Date.now() } 
         }));
       }
       
-      toast.success('⏸️ Rodada pausada!', {
-        duration: 2000,
-      });
-      
+      toast.success('⏸️ Rodada pausada!', { duration: 2000 });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao pausar rodada');
       throw err;
     }
   };
+
 
   const finalizarRodada = async (rodadaId: string) => {
     try {
