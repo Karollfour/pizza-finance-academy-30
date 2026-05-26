@@ -540,6 +540,14 @@ export const useOptimizedRodadas = () => {
     fetchRodadaAtual();
   }, []);
 
+  // Fallback de re-fetch a cada 10s (caso realtime caia)
+  useEffect(() => {
+    const id = setInterval(() => {
+      fetchRodadaAtual(true);
+    }, 10000);
+    return () => clearInterval(id);
+  }, [fetchRodadaAtual]);
+
   return {
     rodadaAtual,
     loading,
@@ -553,3 +561,4 @@ export const useOptimizedRodadas = () => {
     refetch: () => fetchRodadaAtual(false)
   };
 };
+
