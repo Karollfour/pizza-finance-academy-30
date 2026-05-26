@@ -415,50 +415,51 @@ const ProducaoScreen = () => {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
   const handlePausarRodada = async () => {
     if (!rodadaAtual) return;
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('pausar');
     try {
-      console.log('Pausando rodada...');
       await pausarRodada(rodadaAtual.id);
       setTimeout(() => {
         forceGlobalSync();
         refetchRodadas();
       }, 500);
-      toast.success('⏸️ Rodada pausada!', {
-        duration: 3000,
-        position: 'top-center'
-      });
     } catch (error) {
       console.error('Erro ao pausar rodada:', error);
       toast.error('Erro ao pausar rodada. Tente novamente.', {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
   const handleRetomarRodada = async () => {
     if (!rodadaAtual) return;
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('retomar');
     try {
-      console.log('Retomando rodada...');
       await iniciarRodada(rodadaAtual.id);
       setTimeout(() => {
         forceGlobalSync();
         refetchRodadas();
       }, 500);
-      toast.success('▶️ Rodada retomada!', {
-        duration: 3000,
-        position: 'top-center'
-      });
     } catch (error) {
       console.error('Erro ao retomar rodada:', error);
       toast.error('Erro ao retomar rodada. Tente novamente.', {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
+
   const adicionarMinutos = async (minutos: number) => {
     if (!rodadaAtual) return;
     try {
