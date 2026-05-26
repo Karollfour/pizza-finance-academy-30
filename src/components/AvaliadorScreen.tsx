@@ -62,6 +62,8 @@ const AvaliadorScreen = () => {
   };
 
   const handleEvaluation = async (pizzaId: string, approved: boolean) => {
+    if (avaliandoIds.has(pizzaId)) return; // proteção contra clique duplo
+    setAvaliandoIds(prev => new Set(prev).add(pizzaId));
     try {
       const justificativa = approved ? 'Pizza aprovada!' : motivosReprovacao[pizzaId] || '';
       
@@ -72,7 +74,6 @@ const AvaliadorScreen = () => {
         'Avaliador'
       );
 
-      // Limpar motivo de reprovação
       const newMotivos = { ...motivosReprovacao };
       delete newMotivos[pizzaId];
       setMotivosReprovacao(newMotivos);
@@ -80,8 +81,15 @@ const AvaliadorScreen = () => {
       toast.success(`Pizza ${approved ? 'aprovada' : 'reprovada'} com sucesso!`);
     } catch (error) {
       toast.error('Erro ao avaliar pizza');
+    } finally {
+      setAvaliandoIds(prev => {
+        const n = new Set(prev);
+        n.delete(pizzaId);
+        return n;
+      });
     }
   };
+
 
   const updateMotivoReprovacao = (pizzaId: string, motivo: string) => {
     setMotivosReprovacao({
