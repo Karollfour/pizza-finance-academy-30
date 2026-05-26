@@ -786,17 +786,26 @@ const ProducaoScreen = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {rodadaAtual?.status === 'ativa' && saborAtual ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {(rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') && saborAtual ? <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {rodadaAtual?.status === 'pausada' && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                    <div className="bg-orange-500/95 text-white px-6 py-3 rounded-xl shadow-2xl border-4 border-white flex items-center gap-3 animate-pulse">
+                      <Pause className="w-7 h-7" />
+                      <span className="text-2xl font-extrabold tracking-wider">PAUSADO</span>
+                    </div>
+                  </div>
+                )}
                 {/* Sabor Atual */}
                 <div className="lg:col-span-2">
                   {(() => {
                     const corAtual = getSaborCor(saborAtual);
                     const textColor = isColorDark(corAtual) ? '#FFFFFF' : '#000000';
                     const subText = isColorDark(corAtual) ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)';
+                    const isPausada = rodadaAtual?.status === 'pausada';
                     return (
-                      <Card className="shadow-lg border-4" style={{ borderColor: corAtual, backgroundColor: corAtual, color: textColor }}>
+                      <Card className="shadow-lg border-4" style={{ borderColor: corAtual, backgroundColor: corAtual, color: textColor, opacity: isPausada ? 0.85 : 1 }}>
                         <CardContent className="p-6 text-center">
-                          <Badge className="bg-white/90 text-gray-900 text-sm px-3 py-1 mb-3">🍕 EM PRODUÇÃO</Badge>
+                          <Badge className="bg-white/90 text-gray-900 text-sm px-3 py-1 mb-3">{isPausada ? '⏸ PAUSADO' : '🍕 EM PRODUÇÃO'}</Badge>
                           <div className="text-4xl mb-3">🍕</div>
                           <h3 className="font-bold mb-2 text-4xl" style={{ color: textColor }}>
                             {getSaborNome(saborAtual)}
@@ -808,7 +817,7 @@ const ProducaoScreen = () => {
                             Pizza #{saborAtualIndex + 1} de {historico.length}
                           </div>
                           <div className="bg-white/25 p-3 rounded-lg">
-                            <div className="text-sm mb-1" style={{ color: textColor }}>Próxima troca em:</div>
+                            <div className="text-sm mb-1" style={{ color: textColor }}>{isPausada ? 'Cronômetro pausado em:' : 'Próxima troca em:'}</div>
                             <div className="text-2xl font-bold" style={{ color: textColor }}>
                               {formatarTempo(tempoProximaTroca)}
                             </div>
@@ -821,42 +830,56 @@ const ProducaoScreen = () => {
 
                 {/* Próximos Sabores */}
                 <div className="space-y-3">
-                  {proximoSabor ? <Card className="shadow-lg border-2 bg-blue-50" style={{ borderColor: getSaborCor(proximoSabor) }}>
-                      <CardContent className="p-3 text-center">
-                        <Badge className="bg-blue-500 text-white text-xs px-2 py-1 mb-2">PRÓXIMO</Badge>
-                        <div className="text-2xl mb-2">🍕</div>
-                        <h4 className="font-bold text-blue-700 text-3xl">
-                          {getSaborNome(proximoSabor)}
-                        </h4>
-                        <div className="text-xs text-blue-600">
-                          Pizza #{saborAtualIndex + 2}
-                        </div>
-                        <div className="text-xs text-blue-600 mt-1">
-                          Em {formatarTempo(tempoProximaTroca)}
-                        </div>
-                      </CardContent>
-                    </Card> : <Card className="shadow-lg border-2 border-gray-200">
+                  {proximoSabor ? (() => {
+                    const corProx = getSaborCor(proximoSabor);
+                    const textColor = isColorDark(corProx) ? '#FFFFFF' : '#000000';
+                    const subText = isColorDark(corProx) ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)';
+                    return (
+                      <Card className="shadow-lg border-2" style={{ borderColor: corProx, backgroundColor: corProx, color: textColor }}>
+                        <CardContent className="p-3 text-center">
+                          <Badge className="bg-white/90 text-gray-900 text-xs px-2 py-1 mb-2">PRÓXIMO</Badge>
+                          <div className="text-2xl mb-2">🍕</div>
+                          <h4 className="font-bold text-3xl" style={{ color: textColor }}>
+                            {getSaborNome(proximoSabor)}
+                          </h4>
+                          <div className="text-xs" style={{ color: subText }}>
+                            Pizza #{saborAtualIndex + 2}
+                          </div>
+                          <div className="text-xs mt-1" style={{ color: subText }}>
+                            Em {formatarTempo(tempoProximaTroca)}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })() : <Card className="shadow-lg border-2 border-gray-200">
                       <CardContent className="p-3 text-center">
                         <div className="text-xl mb-2">🏁</div>
                         <p className="text-xs text-gray-500">Último sabor</p>
                       </CardContent>
                     </Card>}
 
-                  {segundoProximoSabor && <Card className="shadow-lg border-2 bg-purple-50" style={{ borderColor: getSaborCor(segundoProximoSabor) }}>
-                      <CardContent className="p-3 text-center">
-                        <Badge className="bg-purple-500 text-white text-xs px-2 py-1 mb-2">PRÓXIMO +2</Badge>
-                        <div className="text-2xl mb-2">🍕</div>
-                        <h4 className="font-bold text-purple-700 text-3xl">
-                          {getSaborNome(segundoProximoSabor)}
-                        </h4>
-                        <div className="text-xs text-purple-600">
-                          Pizza #{saborAtualIndex + 3}
-                        </div>
-                        <div className="text-xs text-purple-600 mt-1">
-                          Em {formatarTempo(tempoProximaTroca + intervaloTroca)}
-                        </div>
-                      </CardContent>
-                    </Card>}
+                  {segundoProximoSabor && (() => {
+                    const corSeg = getSaborCor(segundoProximoSabor);
+                    const textColor = isColorDark(corSeg) ? '#FFFFFF' : '#000000';
+                    const subText = isColorDark(corSeg) ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)';
+                    return (
+                      <Card className="shadow-lg border-2" style={{ borderColor: corSeg, backgroundColor: corSeg, color: textColor }}>
+                        <CardContent className="p-3 text-center">
+                          <Badge className="bg-white/90 text-gray-900 text-xs px-2 py-1 mb-2">PRÓXIMO +2</Badge>
+                          <div className="text-2xl mb-2">🍕</div>
+                          <h4 className="font-bold text-3xl" style={{ color: textColor }}>
+                            {getSaborNome(segundoProximoSabor)}
+                          </h4>
+                          <div className="text-xs" style={{ color: subText }}>
+                            Pizza #{saborAtualIndex + 3}
+                          </div>
+                          <div className="text-xs mt-1" style={{ color: subText }}>
+                            Em {formatarTempo(tempoProximaTroca + intervaloTroca)}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })()}
                 </div>
               </div> : (/* Visualização Estática do Carrossel quando aguardando início */
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
