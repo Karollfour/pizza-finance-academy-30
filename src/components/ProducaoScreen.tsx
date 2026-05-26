@@ -306,6 +306,8 @@ const ProducaoScreen = () => {
     }
   };
   const handleIniciarRodada = async () => {
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('iniciar');
     try {
       // Verificar se pode iniciar nova rodada
       if (!podeIniciarNovaRodada()) {
@@ -316,15 +318,14 @@ const ProducaoScreen = () => {
         return;
       }
 
-      // Se há uma rodada aguardando, iniciar ela
-      if (rodadaAtual?.status === 'aguardando') {
-        console.log('Iniciando rodada existente...');
+      // Se há uma rodada aguardando OU pausada, iniciar/retomar ela
+      if (rodadaAtual?.status === 'aguardando' || rodadaAtual?.status === 'pausada') {
         await iniciarRodada(rodadaAtual.id);
         setTimeout(() => {
           forceGlobalSync();
           refetchRodadas();
         }, 500);
-        toast.success(`🚀 Rodada ${rodadaAtual.numero} iniciada!`, {
+        toast.success(`🚀 Rodada ${rodadaAtual.numero} ${rodadaAtual.status === 'pausada' ? 'retomada' : 'iniciada'}!`, {
           duration: 3000,
           position: 'top-center'
         });
@@ -341,13 +342,10 @@ const ProducaoScreen = () => {
       }
 
       // Criar nova rodada usando configurações salvas e iniciar
-      console.log('Criando e iniciando nova rodada com configurações salvas...');
       const novaRodada = await criarNovaRodada(proximoNumero, tempoLimite);
       if (novaRodada?.id) {
         await salvarConfigRodada(novaRodada.id, numeroPizzas);
         await criarSequenciaParaRodada(novaRodada.id, numeroPizzas);
-
-        // Iniciar imediatamente após criar
         await iniciarRodada(novaRodada.id);
         await Promise.all([refetchCounter(), refetchHistorico()]);
         setTimeout(() => {
@@ -366,11 +364,16 @@ const ProducaoScreen = () => {
         duration: 4000,
         position: 'top-center'
       });
+    } finally {
+      setAcaoEmAndamento(null);
     }
   };
   const handleFinalizarRodada = async () => {
     if (!rodadaAtual) return;
+    if (acaoEmAndamento) return;
+    setAcaoEmAndamento('finalizar');
     try {
+
       console.log('Finalizando rodada...');
       await finalizarRodada(rodadaAtual.id);
       await refetchCounter();
