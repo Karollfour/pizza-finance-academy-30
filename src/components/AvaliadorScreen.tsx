@@ -353,8 +353,9 @@ const AvaliadorScreen = () => {
                               Pedido #{getNumeroPedido(pizza)} • Pizza #{pizza.id.slice(-6)} • Sabor: {getSaborPizza(pizza)} • Rodada {rodadaAtual?.numero || 'N/A'}
                             </p>
                             <p className="text-xs text-gray-500">
-                              Avaliada: {new Date(pizza.updated_at).toLocaleString('pt-BR')}
+                              Avaliada: {new Date(((pizza as any).avaliada_em) || pizza.updated_at).toLocaleString('pt-BR')}
                             </p>
+
                           </div>
                         </div>
                         <div className="text-right">
