@@ -296,6 +296,7 @@ export type Database = {
       }
       pizzas: {
         Row: {
+          avaliada_em: string | null
           avaliado_por: string | null
           created_at: string
           equipe_id: string
@@ -309,6 +310,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avaliada_em?: string | null
           avaliado_por?: string | null
           created_at?: string
           equipe_id: string
@@ -322,6 +324,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avaliada_em?: string | null
           avaliado_por?: string | null
           created_at?: string
           equipe_id?: string
@@ -401,7 +404,10 @@ export type Database = {
           id: string
           iniciou_em: string | null
           numero: number
+          pausada_em: string | null
+          retomada_em: string | null
           status: string
+          tempo_decorrido_acumulado: number
           tempo_limite: number
         }
         Insert: {
@@ -410,7 +416,10 @@ export type Database = {
           id?: string
           iniciou_em?: string | null
           numero: number
+          pausada_em?: string | null
+          retomada_em?: string | null
           status?: string
+          tempo_decorrido_acumulado?: number
           tempo_limite?: number
         }
         Update: {
@@ -419,7 +428,10 @@ export type Database = {
           id?: string
           iniciou_em?: string | null
           numero?: number
+          pausada_em?: string | null
+          retomada_em?: string | null
           status?: string
+          tempo_decorrido_acumulado?: number
           tempo_limite?: number
         }
         Relationships: []
