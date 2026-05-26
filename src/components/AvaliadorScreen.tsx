@@ -46,7 +46,7 @@ const AvaliadorScreen = () => {
   // Ordenar pizzas cronologicamente (mais antiga primeiro)
   const pizzasOrdenadas = pizzas.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   
-  const pizzasPendentes = pizzasOrdenadas.filter(p => p.status === 'pronta');
+  const pizzasPendentes = pizzasOrdenadas.filter(p => p.status === 'pronta' && (p as any).enviada_para_avaliacao === true);
   const pizzasAvaliadas = pizzasOrdenadas.filter(p => p.status === 'avaliada');
 
   // Função para obter o número do pedido baseado na ordem cronológica
