@@ -30,6 +30,7 @@ export const useRodadas = () => {
     }
   };
 
+
   const obterProximoNumeroRodada = async () => {
     try {
       console.log('Obtendo próximo número da rodada...');
