@@ -52,9 +52,10 @@ export const usePizzas = (equipeId?: string, rodadaId?: string) => {
           rodada_id: rodadaId,
           sabor_id: saborId || null,
           status: 'pronta',
+          enviada_para_avaliacao: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        })
+        } as any)
         .select(`
           *,
           sabor:sabores_pizza(*)
