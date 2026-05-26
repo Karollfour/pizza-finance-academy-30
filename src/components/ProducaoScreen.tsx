@@ -936,7 +936,7 @@ const ProducaoScreen = () => {
               </div>)}
 
             {/* Histórico Visual da Rodada Atual - Apenas pizzas já produzidas */}
-            {rodadaAtual?.status === 'ativa' && historico.length > 0 && saboresPassados.length > 0 && <div className="mt-6 pt-4 border-t border-orange-200">
+            {(rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') && historico.length > 0 && saboresPassados.length > 0 && <div className="mt-6 pt-4 border-t border-orange-200">
                 <div className="flex flex-wrap gap-1 mt-2">
                   {[...saboresPassados].reverse().map((sabor, index) => {
               const saborNome = getSaborNome(sabor);
