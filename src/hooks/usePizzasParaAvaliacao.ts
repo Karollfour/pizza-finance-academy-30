@@ -22,6 +22,7 @@ export const usePizzasParaAvaliacao = (equipeId?: string) => {
           rodada:rodadas(numero)
         `)
         .eq('status', 'pronta')
+        .eq('enviada_para_avaliacao', true)
         .is('resultado', null)
         .order('created_at', { ascending: true });
 
