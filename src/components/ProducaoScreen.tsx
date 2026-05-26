@@ -789,27 +789,34 @@ const ProducaoScreen = () => {
             {rodadaAtual?.status === 'ativa' && saborAtual ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Sabor Atual */}
                 <div className="lg:col-span-2">
-                  <Card className="shadow-lg border-4 bg-green-50" style={{ borderColor: getSaborCor(saborAtual) }}>
-                    <CardContent className="p-6 text-center">
-                      <Badge className="bg-green-500 text-white text-sm px-3 py-1 mb-3">🍕 EM PRODUÇÃO</Badge>
-                      <div className="text-4xl mb-3">🍕</div>
-                      <h3 className="font-bold text-green-700 mb-2 text-4xl">
-                        {getSaborNome(saborAtual)}
-                      </h3>
-                      {getSaborDescricao(saborAtual) && <p className="text-sm text-green-600 mb-3">
-                          {getSaborDescricao(saborAtual)}
-                        </p>}
-                      <div className="text-lg text-green-600 mb-3">
-                        Pizza #{saborAtualIndex + 1} de {historico.length}
-                      </div>
-                      <div className="bg-green-200 p-3 rounded-lg">
-                        <div className="text-sm text-green-700 mb-1">Próxima troca em:</div>
-                        <div className="text-2xl font-bold text-green-800">
-                          {formatarTempo(tempoProximaTroca)}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {(() => {
+                    const corAtual = getSaborCor(saborAtual);
+                    const textColor = isColorDark(corAtual) ? '#FFFFFF' : '#000000';
+                    const subText = isColorDark(corAtual) ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)';
+                    return (
+                      <Card className="shadow-lg border-4" style={{ borderColor: corAtual, backgroundColor: corAtual, color: textColor }}>
+                        <CardContent className="p-6 text-center">
+                          <Badge className="bg-white/90 text-gray-900 text-sm px-3 py-1 mb-3">🍕 EM PRODUÇÃO</Badge>
+                          <div className="text-4xl mb-3">🍕</div>
+                          <h3 className="font-bold mb-2 text-4xl" style={{ color: textColor }}>
+                            {getSaborNome(saborAtual)}
+                          </h3>
+                          {getSaborDescricao(saborAtual) && <p className="text-sm mb-3" style={{ color: subText }}>
+                              {getSaborDescricao(saborAtual)}
+                            </p>}
+                          <div className="text-lg mb-3" style={{ color: subText }}>
+                            Pizza #{saborAtualIndex + 1} de {historico.length}
+                          </div>
+                          <div className="bg-white/25 p-3 rounded-lg">
+                            <div className="text-sm mb-1" style={{ color: textColor }}>Próxima troca em:</div>
+                            <div className="text-2xl font-bold" style={{ color: textColor }}>
+                              {formatarTempo(tempoProximaTroca)}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })()}
                 </div>
 
                 {/* Próximos Sabores */}
