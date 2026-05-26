@@ -295,8 +295,8 @@ const ProducaoScreen = () => {
     }
   };
 
-  };
   const handleIniciarRodada = async () => {
+
     if (acaoEmAndamento) return;
     setAcaoEmAndamento('iniciar');
     try {
