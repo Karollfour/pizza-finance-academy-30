@@ -349,6 +349,15 @@ export const useRodadas = () => {
     fetchRodadaAtual();
   }, []);
 
+  // Fallback de re-fetch a cada 10s (caso realtime caia)
+  useEffect(() => {
+    const id = setInterval(() => {
+      fetchRodadaAtual();
+    }, 10000);
+    return () => clearInterval(id);
+  }, []);
+
+
   return {
     rodadaAtual,
     loading,
