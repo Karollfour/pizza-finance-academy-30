@@ -24,7 +24,7 @@ export const useOptimizedRodadas = () => {
       const { data, error } = await supabase
         .from('rodadas')
         .select('*')
-        .in('status', ['aguardando', 'ativa'])
+        .in('status', ['aguardando', 'ativa', 'pausada'])
         .order('numero', { ascending: false })
         .limit(1)
         .single();
@@ -58,6 +58,7 @@ export const useOptimizedRodadas = () => {
       if (!silent) setLoading(false);
     }
   }, [rodadaAtual]);
+
 
   const obterProximoNumeroRodada = async () => {
     try {
