@@ -667,19 +667,20 @@ const ProducaoScreen = () => {
             </div>
 
             <div className="flex justify-center gap-4 mt-8">
-              <Button onClick={handleCriarNovaRodada} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || !podeIniciarNovaRodada()} size="lg">
-                {loadingSequencia ? <>
+              <Button onClick={handleCriarNovaRodada} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || !podeIniciarNovaRodada() || !!acaoEmAndamento} size="lg">
+                {(loadingSequencia || acaoEmAndamento === 'criar') ? <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     Criando Rodada...
                   </> : !podeIniciarNovaRodada() ? <>🏁 Limite de Rodadas Atingido</> : <>🎯 Criar Rodada</>}
               </Button>
               
-              <Button onClick={handleIniciarRodada} className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || rodadaAtual && rodadaAtual.status === 'ativa' || !configuracoesBloqueadas && !rodadaAtual} size="lg">
-                {loadingSequencia ? <>
+              <Button onClick={handleIniciarRodada} className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 text-lg" disabled={loadingSequencia || (rodadaAtual && rodadaAtual.status === 'ativa') || (!configuracoesBloqueadas && !rodadaAtual) || !!acaoEmAndamento} size="lg">
+                {(loadingSequencia || acaoEmAndamento === 'iniciar') ? <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Criando...
+                    Iniciando...
                   </> : rodadaAtual?.status === 'ativa' ? <>⏸️ Rodada em Andamento</> : rodadaAtual?.status === 'aguardando' ? <>🚀 Iniciar Rodada {rodadaAtual.numero}</> : !configuracoesBloqueadas ? <>⚠️ Crie a primeira rodada</> : <>🚀 Iniciar Rodada</>}
               </Button>
+
             </div>
 
             {configuracoesBloqueadas && <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
