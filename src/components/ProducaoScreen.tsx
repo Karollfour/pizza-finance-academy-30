@@ -755,7 +755,7 @@ const ProducaoScreen = () => {
         </Card>}
 
       {/* Carrossel de Sabores - MODIFICADO: mostrar sempre que há rodada ativa ou aguardando e historico existe */}
-      {historico.length > 0 && rodadaAtual && (rodadaAtual.status === 'ativa' || rodadaAtual.status === 'aguardando') && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
+      {historico.length > 0 && rodadaAtual && (rodadaAtual.status === 'ativa' || rodadaAtual.status === 'aguardando' || rodadaAtual.status === 'pausada') && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-xl font-bold text-orange-600">🍕 Carrossel de Sabores</span>
