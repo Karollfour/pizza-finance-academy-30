@@ -124,7 +124,7 @@ const GerenciadorItens = () => {
                     
                     <div className="space-y-1 text-sm text-gray-600 mb-3">
                       <p><strong>Unidade:</strong> {produto.unidade}</p>
-                      <p><strong>Valor:</strong> R$ {produto.valor_unitario.toFixed(2)}</p>
+                      <p><strong>Valor:</strong> $ {produto.valor_unitario.toFixed(2)}</p>
                       <p><strong>Durabilidade:</strong> {produto.durabilidade} rodadas</p>
                       {produto.descricao && <p><strong>Descrição:</strong> {produto.descricao}</p>}
                     </div>

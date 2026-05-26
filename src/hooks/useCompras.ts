@@ -107,7 +107,7 @@ export const useCompras = (equipeId?: string) => {
             
             // Notificar sobre nova compra apenas se não for da equipe atual
             if (!equipeId || novaCompra.equipe_id !== equipeId) {
-              toast.info(`💰 Nova compra registrada: R$ ${novaCompra.valor_total.toFixed(2)}`, {
+              toast.info(`💰 Nova compra registrada: $ ${novaCompra.valor_total.toFixed(2)}`, {
                 duration: 3000,
               });
             }

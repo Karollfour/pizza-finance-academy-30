@@ -158,7 +158,7 @@ const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }
           </div>
         )}
         <span className="text-xs font-medium text-center">{produto.nome}</span>
-        <span className="text-xs">R$ {produto.valor_unitario.toFixed(2)}</span>
+        <span className="text-xs">$ {produto.valor_unitario.toFixed(2)}</span>
       </Button>
     );
   };
@@ -175,7 +175,7 @@ const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }
           {/* Saldo Disponível */}
           <div className="text-center p-4 bg-blue-50 rounded-lg">
             <div className="text-2xl font-bold text-blue-600">
-              R$ {saldoDisponivel.toFixed(2)}
+              $ {saldoDisponivel.toFixed(2)}
             </div>
             <div className="text-sm text-blue-700">Saldo Disponível</div>
           </div>
@@ -264,7 +264,7 @@ const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }
                 )}
                 <div className="flex justify-between text-sm">
                   <span>Viagem à loja:</span>
-                  <span>R$ 5,00</span>
+                  <span>$ 5,00</span>
                 </div>
                 {ingredientesSelecionados.map(produtoId => {
                   const produto = produtosDisponiveis.find(p => p.id === produtoId);
@@ -282,14 +282,14 @@ const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }
                         )}
                         <span>{produto.nome}</span>
                       </div>
-                      <span>R$ {produto.valor_unitario.toFixed(2)}</span>
+                      <span>$ {produto.valor_unitario.toFixed(2)}</span>
                     </div>
                   ) : null;
                 })}
                 <hr className="my-2" />
                 <div className="flex justify-between font-bold">
                   <span>Total:</span>
-                  <span className="text-green-600">R$ {calcularPrecoTotal().toFixed(2)}</span>
+                  <span className="text-green-600">$ {calcularPrecoTotal().toFixed(2)}</span>
                 </div>
               </div>
             </div>

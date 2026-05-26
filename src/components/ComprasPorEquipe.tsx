@@ -84,7 +84,7 @@ const ComprasPorEquipe = () => {
                     )}
                     <div className="text-sm">
                       <strong>Valor:</strong> <span className="text-green-600 font-semibold">
-                        R$ {compra.valor_total.toFixed(2)}
+                        $ {compra.valor_total.toFixed(2)}
                       </span>
                     </div>
                     {compra.descricao && (
@@ -110,7 +110,7 @@ const ComprasPorEquipe = () => {
               </div>
               <div>
                 <div className="text-lg font-bold text-green-600">
-                  R$ {comprasFiltradas.reduce((sum, c) => sum + c.valor_total, 0).toFixed(2)}
+                  $ {comprasFiltradas.reduce((sum, c) => sum + c.valor_total, 0).toFixed(2)}
                 </div>
                 <div className="text-sm text-green-700">Total Gasto</div>
               </div>

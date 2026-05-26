@@ -199,13 +199,13 @@ const GestaoEquipes = () => {
                         </p>
                         <div className="flex items-center space-x-4 text-sm">
                           <span className="text-green-600">
-                            <strong>Saldo Inicial:</strong> R$ {equipe.saldo_inicial.toFixed(2)}
+                            <strong>Saldo Inicial:</strong> $ {equipe.saldo_inicial.toFixed(2)}
                           </span>
                           <span className="text-red-600">
-                            <strong>Gasto Total:</strong> R$ {gastoTotalCalculado.toFixed(2)}
+                            <strong>Gasto Total:</strong> $ {gastoTotalCalculado.toFixed(2)}
                           </span>
                           <span className={`font-bold ${saldoDisponivel >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                            <strong>Disponível:</strong> R$ {saldoDisponivel.toFixed(2)}
+                            <strong>Disponível:</strong> $ {saldoDisponivel.toFixed(2)}
                           </span>
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
