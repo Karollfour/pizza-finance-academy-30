@@ -45,6 +45,18 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
 
   const corAtual = saborAtual.sabor?.cor || '#9CA3AF';
 
+  const isColorDark = (hex: string) => {
+    const c = hex.replace('#', '');
+    const full = c.length === 3 ? c.split('').map((x) => x + x).join('') : c;
+    const r = parseInt(full.substring(0, 2), 16);
+    const g = parseInt(full.substring(2, 4), 16);
+    const b = parseInt(full.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.6;
+  };
+  const textColor = isColorDark(corAtual) ? '#FFFFFF' : '#000000';
+  const subTextColor = isColorDark(corAtual) ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)';
+
   return (
     <div className="space-y-6">
       {/* Sabor Atual */}
@@ -52,37 +64,38 @@ const SaborAutomaticoDisplay = ({ rodada, numeroPizzas }: SaborAutomaticoDisplay
         className="shadow-xl border-4"
         style={{
           borderColor: corAtual,
-          backgroundColor: `${corAtual}22`,
+          backgroundColor: corAtual,
+          color: textColor,
         }}
       >
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-green-700">
+          <CardTitle style={{ color: textColor }}>
             🍕 SABOR ATUAL - Pizza #{saborAtualIndex + 1}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <div
-            className="mx-auto rounded-full border-4 border-white shadow-lg flex items-center justify-center"
-            style={{ width: 96, height: 96, backgroundColor: corAtual }}
+            className="mx-auto rounded-full border-4 border-white shadow-lg flex items-center justify-center bg-white/20"
+            style={{ width: 96, height: 96 }}
           >
             <span className="text-3xl">🍕</span>
           </div>
-          <h2 className="text-4xl font-bold text-green-700">
+          <h2 className="text-4xl font-bold" style={{ color: textColor }}>
             {saborAtual.sabor?.nome || 'Sabor não encontrado'}
           </h2>
           
           {saborAtual.sabor?.descricao && (
-            <p className="text-lg text-green-600">
+            <p className="text-lg" style={{ color: subTextColor }}>
               {saborAtual.sabor.descricao}
             </p>
           )}
           
           <div className="space-y-2">
-            <div className="text-sm text-green-600">
+            <div className="text-sm" style={{ color: subTextColor }}>
               Tempo restante para próxima troca: {formatarTempo(tempoProximaTroca)}
             </div>
             <Progress value={progressoAtual} className="w-full" />
-            <div className="text-xs text-green-500">
+            <div className="text-xs" style={{ color: subTextColor }}>
               Intervalo: {formatarTempo(intervaloTroca)} por pizza
             </div>
           </div>
