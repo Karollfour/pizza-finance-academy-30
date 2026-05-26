@@ -88,6 +88,11 @@ const ProducaoScreen = () => {
   // Persistir estado da aba ativa - controle como padrão
   const [activeTab, setActiveTab] = usePersistedState('producao-active-tab', 'controle');
 
+  // Proteção contra clique duplo em ações críticas
+  const [acaoEmAndamento, setAcaoEmAndamento] = useState<null | 'iniciar' | 'pausar' | 'retomar' | 'finalizar' | 'criar'>(null);
+
+
+
   // Estados persistidos para controle do carrossel - AGORA PERSISTIDOS
   const [tempoLimite, setTempoLimite] = usePersistedState('config-tempo-limite', 300);
   const [numeroPizzas, setNumeroPizzas] = usePersistedState('config-numero-pizzas', 10);
