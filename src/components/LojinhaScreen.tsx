@@ -88,7 +88,7 @@ const LojinhaScreen = () => {
       const {
         valor
       } = event.detail;
-      toast.info(`💰 Nova compra: R$ ${valor.toFixed(2)}`, {
+      toast.info(`💰 Nova compra: $ ${valor.toFixed(2)}`, {
         duration: 2000
       });
     };
@@ -129,11 +129,11 @@ const LojinhaScreen = () => {
                     <div className="text-sm text-gray-600">Pendentes</div>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-purple-600">R$ {estatisticasGerais.totalGastos.toFixed(2)}</div>
+                    <div className="text-xl font-bold text-purple-600">$ {estatisticasGerais.totalGastos.toFixed(2)}</div>
                     <div className="text-sm text-gray-600">Total Gastos</div>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-emerald-600">R$ {estatisticasGerais.totalGanhos.toFixed(2)}</div>
+                    <div className="text-xl font-bold text-emerald-600">$ {estatisticasGerais.totalGanhos.toFixed(2)}</div>
                     <div className="text-sm text-gray-600">Total Ganhos</div>
                   </div>
                 </div> : <div className="text-lg text-gray-600">Nenhuma rodada ativa</div>}
@@ -176,7 +176,7 @@ const LojinhaScreen = () => {
             <div className="text-sm text-gray-600">Equipes Ativas</div>
           </Card>
           <Card className="text-center p-4 bg-white shadow-lg">
-            <div className="text-2xl font-bold text-emerald-600">R$ {estatisticasGerais.totalGanhos.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-emerald-600">$ {estatisticasGerais.totalGanhos.toFixed(2)}</div>
             <div className="text-sm text-gray-600">Total Ganhos</div>
           </Card>
         </div>

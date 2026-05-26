@@ -217,7 +217,7 @@ const EquipeScreen = ({ teamName, teamId }: EquipeScreenProps) => {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-red-600">
-                      R$ {totalGasto.toFixed(2)}
+                      $ {totalGasto.toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-600">Total Gasto</div>
                   </div>
@@ -328,7 +328,7 @@ const EquipeScreen = ({ teamName, teamId }: EquipeScreenProps) => {
           </Card>
           <Card className="text-center p-4">
             <div className="text-2xl font-bold text-orange-600">
-              R$ {totalGasto.toFixed(2)}
+              $ {totalGasto.toFixed(2)}
             </div>
             <div className="text-sm text-gray-600">Gastos Totais</div>
           </Card>

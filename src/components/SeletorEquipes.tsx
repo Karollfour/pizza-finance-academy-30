@@ -73,19 +73,19 @@ const SeletorEquipes = ({ onEquipeSelecionada }: SeletorEquipesProps) => {
                             <div className="flex justify-between">
                               <span>Saldo Inicial:</span>
                               <span className="font-medium text-green-600">
-                                R$ {equipe.saldo_inicial.toFixed(2)}
+                                $ {equipe.saldo_inicial.toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Gasto Total:</span>
                               <span className="font-medium text-red-600">
-                                R$ {gastoAtualizado.toFixed(2)}
+                                $ {gastoAtualizado.toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between border-t pt-2">
                               <span>Saldo Restante:</span>
                               <span className={`font-bold ${saldoRestante >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                                R$ {saldoRestante.toFixed(2)}
+                                $ {saldoRestante.toFixed(2)}
                               </span>
                             </div>
                           </div>

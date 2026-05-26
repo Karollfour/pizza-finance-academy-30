@@ -125,7 +125,7 @@ const DashboardLojinha = () => {
       
       const eq = comprasEQ.reduce((sum, c) => sum + (c.valor_total / numeroRodadasUsadas), 0);
       
-      // Calcular MO (Mão de Obra) - número de pessoas x R$10
+      // Calcular MO (Mão de Obra) - número de pessoas x $10
       const mo = (equipe.quantidade_pessoas || 1) * 10;
       
       // Calcular número de pizzas aprovadas na rodada
@@ -184,7 +184,7 @@ const DashboardLojinha = () => {
           })
         : pizzas.filter(p => p.equipe_id === equipe.id && p.resultado === 'aprovada');
       
-      const ganho = pizzasEquipe.length * 10; // R$ 10 por pizza aprovada
+      const ganho = pizzasEquipe.length * 10; // $ 10 por pizza aprovada
       
       return {
         nome: equipe.nome,
@@ -268,9 +268,9 @@ const DashboardLojinha = () => {
                     <Tooltip 
                       formatter={(value, name) => {
                         const formatters = {
-                          mp: (val: number) => [`R$ ${val.toFixed(2)}`, 'Matéria-Prima (MP)'],
-                          eq: (val: number) => [`R$ ${val.toFixed(2)}`, 'Equipamento (EQ)'],
-                          mo: (val: number) => [`R$ ${val.toFixed(2)}`, 'Mão de Obra (MO)']
+                          mp: (val: number) => [`$ ${val.toFixed(2)}`, 'Matéria-Prima (MP)'],
+                          eq: (val: number) => [`$ ${val.toFixed(2)}`, 'Equipamento (EQ)'],
+                          mo: (val: number) => [`$ ${val.toFixed(2)}`, 'Mão de Obra (MO)']
                         };
                         return formatters[name as keyof typeof formatters]?.(value as number) || [value, name];
                       }}
@@ -295,7 +295,7 @@ const DashboardLojinha = () => {
                         {/* Lucro por pizza - destaque principal */}
                         <div className="bg-green-100 p-3 rounded-lg mb-3 text-center">
                           <div className="text-2xl font-bold text-green-700">
-                            R$ {dados.lucro}
+                            $ {dados.lucro}
                           </div>
                           <div className="text-sm text-green-600">Custo por Pizza</div>
                         </div>
@@ -304,22 +304,22 @@ const DashboardLojinha = () => {
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between items-center bg-red-50 p-2 rounded">
                             <span className="text-red-700">MP (Matéria-Prima):</span>
-                            <span className="font-bold text-red-800">R$ {dados.mp.toFixed(2)}</span>
+                            <span className="font-bold text-red-800">$ {dados.mp.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between items-center bg-yellow-50 p-2 rounded">
                             <span className="text-yellow-700">EQ (Equipamento):</span>
-                            <span className="font-bold text-yellow-800">R$ {dados.eq.toFixed(2)}</span>
+                            <span className="font-bold text-yellow-800">$ {dados.eq.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between items-center bg-green-50 p-2 rounded">
                             <span className="text-green-700">MO (Mão de Obra):</span>
-                            <span className="font-bold text-green-800">R$ {dados.mo.toFixed(2)}</span>
+                            <span className="font-bold text-green-800">$ {dados.mo.toFixed(2)}</span>
                           </div>
                           
                           {/* Totais */}
                           <div className="border-t pt-2 mt-2">
                             <div className="flex justify-between items-center font-bold">
                               <span>Custo Total:</span>
-                              <span>R$ {dados.custoTotal.toFixed(2)}</span>
+                              <span>$ {dados.custoTotal.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-blue-600">
                               <span>Pizzas Aprovadas:</span>
@@ -457,7 +457,7 @@ const DashboardLojinha = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="nome" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, 'Gasto Total']} />
+                  <Tooltip formatter={(value) => [`$ ${Number(value).toFixed(2)}`, 'Gasto Total']} />
                   <Bar dataKey="gasto" fill="#8884d8" />
                 </BarChart>
               </ResponsiveContainer>
@@ -487,7 +487,7 @@ const DashboardLojinha = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="nome" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, 'Ganho Total']} />
+                  <Tooltip formatter={(value) => [`$ ${Number(value).toFixed(2)}`, 'Ganho Total']} />
                   <Bar dataKey="ganho" fill="#22c55e" />
                 </BarChart>
               </ResponsiveContainer>
@@ -497,7 +497,7 @@ const DashboardLojinha = () => {
                 <p className="text-sm">
                   {rodadaSelecionada 
                     ? `Não há pizzas aprovadas na Rodada ${rodadaSelecionada}`
-                    : "As equipes ganham R$ 10,00 para cada pizza aprovada!"
+                    : "As equipes ganham $ 10,00 para cada pizza aprovada!"
                   }
                 </p>
               </div>
@@ -545,7 +545,7 @@ const DashboardLojinha = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `R$ ${Number(value).toFixed(2)}`} />
+                <Tooltip formatter={(value) => `$ ${Number(value).toFixed(2)}`} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -562,13 +562,13 @@ const DashboardLojinha = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-blue-100 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-blue-600">
-                  R$ {compras.reduce((sum, c) => sum + c.valor_total, 0).toFixed(2)}
+                  $ {compras.reduce((sum, c) => sum + c.valor_total, 0).toFixed(2)}
                 </div>
                 <div className="text-sm text-blue-700">Total Gasto</div>
               </div>
               <div className="bg-green-100 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  R$ {equipes.reduce((sum, e) => sum + (e.ganho_total || 0), 0).toFixed(2)}
+                  $ {equipes.reduce((sum, e) => sum + (e.ganho_total || 0), 0).toFixed(2)}
                 </div>
                 <div className="text-sm text-green-700">Total Ganho (Pizzas)</div>
               </div>

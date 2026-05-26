@@ -102,7 +102,7 @@ const HistoricoLoja = () => {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-xl font-bold text-green-600">R$ {estatisticas.faturamentoTotal.toFixed(2)}</div>
+            <div className="text-xl font-bold text-green-600">$ {estatisticas.faturamentoTotal.toFixed(2)}</div>
             <div className="text-sm text-gray-600">Faturamento</div>
           </CardContent>
         </Card>
@@ -216,7 +216,7 @@ const HistoricoLoja = () => {
                     <div className="text-right">
                       {item.tipo === 'compra' && (
                         <div className="text-green-600 font-semibold">
-                          R$ {item.valor.toFixed(2)}
+                          $ {item.valor.toFixed(2)}
                         </div>
                       )}
                       {item.tipo === 'pizza' && (

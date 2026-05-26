@@ -154,7 +154,7 @@ const VendasLoja = () => {
                   const saldoDisponivel = calcularSaldoDisponivel(equipe);
                   return (
                     <SelectItem key={equipe.id} value={equipe.id}>
-                      {equipe.nome} - R$ {saldoDisponivel.toFixed(2)} disponível
+                      {equipe.nome} - $ {saldoDisponivel.toFixed(2)} disponível
                     </SelectItem>
                   );
                 })}
@@ -172,7 +172,7 @@ const VendasLoja = () => {
                       <h4 className="font-medium text-sm">{produto.nome}</h4>
                       <p className="text-xs text-gray-600">{produto.unidade}</p>
                       <p className="text-sm font-semibold text-green-600">
-                        R$ {produto.valor_unitario.toFixed(2)}
+                        $ {produto.valor_unitario.toFixed(2)}
                       </p>
                       <Button size="sm" className="w-full mt-2" onClick={() => adicionarAoCarrinho(produto.id)}>
                         <Plus className="w-3 h-3 mr-1" />
@@ -194,7 +194,7 @@ const VendasLoja = () => {
                       <div>
                         <p className="font-medium">{item.produto.nome}</p>
                         <p className="text-sm text-gray-600">
-                          R$ {item.produto.valor_unitario.toFixed(2)} por {item.produto.unidade}
+                          $ {item.produto.valor_unitario.toFixed(2)} por {item.produto.unidade}
                         </p>
                       </div>
                     </div>
@@ -210,7 +210,7 @@ const VendasLoja = () => {
                         <Trash2 className="w-3 h-3" />
                       </Button>
                       <span className="font-semibold text-green-600 ml-2">
-                        R$ {(item.produto.valor_unitario * item.quantidade).toFixed(2)}
+                        $ {(item.produto.valor_unitario * item.quantidade).toFixed(2)}
                       </span>
                     </div>
                   </div>)}
@@ -221,7 +221,7 @@ const VendasLoja = () => {
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
               <Checkbox id="cobrancaViagem" checked={cobrancaViagem} onCheckedChange={checked => setCobrancaViagem(checked === true)} />
-              <label htmlFor="cobrancaViagem" className="text-sm">Cobrar taxa de viagem à loja (R$ 5,00)</label>
+              <label htmlFor="cobrancaViagem" className="text-sm">Cobrar taxa de viagem à loja ($ 5,00)</label>
             </div>
 
             <div>
@@ -235,18 +235,18 @@ const VendasLoja = () => {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm">Subtotal produtos:</span>
                 <span className="font-semibold">
-                  R$ {carrinho.reduce((total, item) => total + item.produto.valor_unitario * item.quantidade, 0).toFixed(2)}
+                  $ {carrinho.reduce((total, item) => total + item.produto.valor_unitario * item.quantidade, 0).toFixed(2)}
                 </span>
               </div>
               {cobrancaViagem && <div className="flex justify-between items-center mb-2">
                   <span className="text-sm">Taxa de viagem:</span>
-                  <span className="font-semibold">R$ 5,00</span>
+                  <span className="font-semibold">$ 5,00</span>
                 </div>}
               <Separator className="my-2" />
               <div className="flex justify-between items-center text-lg">
                 <span className="font-bold">Total:</span>
                 <span className="font-bold text-green-600">
-                  R$ {calcularTotalCarrinho().toFixed(2)}
+                  $ {calcularTotalCarrinho().toFixed(2)}
                 </span>
               </div>
             </div>}
@@ -267,7 +267,7 @@ const VendasLoja = () => {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-600">
-              R$ {totalVendasHoje.toFixed(2)}
+              $ {totalVendasHoje.toFixed(2)}
             </div>
             <div className="text-sm text-gray-600">Vendas Hoje</div>
           </CardContent>
@@ -283,7 +283,7 @@ const VendasLoja = () => {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-purple-600">
-              R$ {compras.reduce((sum, c) => sum + c.valor_total, 0).toFixed(2)}
+              $ {compras.reduce((sum, c) => sum + c.valor_total, 0).toFixed(2)}
             </div>
             <div className="text-sm text-gray-600">Faturamento Total</div>
           </CardContent>
@@ -313,7 +313,7 @@ const VendasLoja = () => {
                         {venda.tipo === 'material' ? '🛒' : '🚗'}
                       </Badge>
                       <div className="text-green-600 font-semibold">
-                        R$ {venda.valor_total.toFixed(2)}
+                        $ {venda.valor_total.toFixed(2)}
                       </div>
                     </div>
                   </div>
