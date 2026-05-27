@@ -19,7 +19,7 @@ interface MontadorPizzaProps {
 const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }: MontadorPizzaProps) => {
   const { produtos } = useProdutos();
   const { registrarCompra } = useCompras();
-  const { rodadaAtual } = useRodadas();
+  const { rodadaAtual, loading: rodadaLoading } = useRodadas();
   const { marcarPizzaPronta } = usePizzas();
   const { sabores } = useSabores();
   const [ingredientesSelecionados, setIngredientesSelecionados] = useState<string[]>([]);
