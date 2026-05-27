@@ -26,29 +26,15 @@ export const useSabores = () => {
 
       if (error) throw error;
       
-      // Converter para o formato esperado - apenas Pepperoni e Mussarela
-      // Filtrar Mussarela: manter apenas os que têm imagem (sem descrição)
-      const saboresFormatados: Sabor[] = (data || [])
-        .filter(sabor => {
-          if (sabor.nome === 'Pepperoni') return true;
-          if (sabor.nome === 'Mussarela') {
-            // Manter apenas Mussarela que tem imagem e NÃO tem descrição
-            return sabor.imagem && !sabor.descricao;
-          }
-          return false;
-        })
-        .map(sabor => ({
-          ...sabor,
-          ingredientes: [],
-          imagem: sabor.imagem
-        }));
-      
+      // Incluir todos os sabores disponíveis (sem filtro legado por nome/imagem)
+      const saboresFormatados: Sabor[] = (data || []).map(sabor => ({
+        ...sabor,
+        ingredientes: [],
+        imagem: sabor.imagem
+      }));
+
       setSabores(saboresFormatados);
-      
-      // Se não houver sabores no banco, criar os padrão
-      if (saboresFormatados.length === 0) {
-        await inicializarSaboresDefault();
-      }
+
     } catch (err) {
       console.error('Erro ao carregar sabores:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar sabores');
