@@ -26,38 +26,23 @@ export const useSabores = () => {
 
       if (error) throw error;
       
-      // Converter para o formato esperado - apenas Pepperoni e Mussarela
-      // Filtrar Mussarela: manter apenas os que têm imagem (sem descrição)
-      const saboresFormatados: Sabor[] = (data || [])
-        .filter(sabor => {
-          if (sabor.nome === 'Pepperoni') return true;
-          if (sabor.nome === 'Mussarela') {
-            // Manter apenas Mussarela que tem imagem e NÃO tem descrição
-            return sabor.imagem && !sabor.descricao;
-          }
-          return false;
-        })
-        .map(sabor => ({
-          ...sabor,
-          ingredientes: [],
-          imagem: sabor.imagem
-        }));
-      
+      // Incluir todos os sabores disponíveis (sem filtro legado por nome/imagem)
+      const saboresFormatados: Sabor[] = (data || []).map(sabor => ({
+        ...sabor,
+        ingredientes: [],
+        imagem: sabor.imagem
+      }));
+
       setSabores(saboresFormatados);
-      
-      // Se não houver sabores no banco, criar os padrão
-      if (saboresFormatados.length === 0) {
-        await inicializarSaboresDefault();
-      }
+
     } catch (err) {
       console.error('Erro ao carregar sabores:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar sabores');
-      // Fallback para sabores padrão se houver erro
-      inicializarSaboresDefault();
     } finally {
       setLoading(false);
     }
   };
+
 
   const criarSabor = async (
     nome: string,
@@ -289,30 +274,24 @@ export const useSabores = () => {
           
           if (payload.eventType === 'INSERT') {
             const novoSabor = payload.new as SaborPizza;
-            // Aplicar mesma lógica de filtro
-            if (novoSabor.nome === 'Pepperoni' || 
-                (novoSabor.nome === 'Mussarela' && novoSabor.imagem && !novoSabor.descricao)) {
-              const saborFormatado: Sabor = {
-                ...novoSabor,
-                ingredientes: []
-              };
-              setSabores(prev => [...prev, saborFormatado]);
+            if (novoSabor.disponivel) {
+              const saborFormatado: Sabor = { ...novoSabor, ingredientes: [] };
+              setSabores(prev => prev.find(s => s.id === saborFormatado.id) ? prev : [...prev, saborFormatado]);
             }
           } else if (payload.eventType === 'UPDATE') {
             const saborAtualizado = payload.new as SaborPizza;
-            if (saborAtualizado.nome === 'Pepperoni' || 
-                (saborAtualizado.nome === 'Mussarela' && saborAtualizado.imagem && !saborAtualizado.descricao)) {
-              const saborFormatado: Sabor = {
-                ...saborAtualizado,
-                ingredientes: []
-              };
-              setSabores(prev => prev.map(sabor => 
-                sabor.id === saborFormatado.id ? saborFormatado : sabor
-              ));
+            if (saborAtualizado.disponivel) {
+              const saborFormatado: Sabor = { ...saborAtualizado, ingredientes: [] };
+              setSabores(prev => {
+                const existe = prev.find(s => s.id === saborFormatado.id);
+                return existe
+                  ? prev.map(s => s.id === saborFormatado.id ? saborFormatado : s)
+                  : [...prev, saborFormatado];
+              });
             } else {
-              // Remover se não atende mais aos critérios
               setSabores(prev => prev.filter(sabor => sabor.id !== saborAtualizado.id));
             }
+
           } else if (payload.eventType === 'DELETE') {
             const saborRemovido = payload.old as SaborPizza;
             setSabores(prev => prev.filter(sabor => sabor.id !== saborRemovido.id));
