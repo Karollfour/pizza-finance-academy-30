@@ -38,12 +38,11 @@ export const useSabores = () => {
     } catch (err) {
       console.error('Erro ao carregar sabores:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar sabores');
-      // Fallback para sabores padrão se houver erro
-      inicializarSaboresDefault();
     } finally {
       setLoading(false);
     }
   };
+
 
   const criarSabor = async (
     nome: string,
