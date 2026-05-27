@@ -18,7 +18,7 @@ interface EquipeScreenProps {
 }
 
 const EquipeScreen = ({ teamName, teamId }: EquipeScreenProps) => {
-  const { rodadaAtual, lastUpdate } = useOptimizedRodadas();
+  const { rodadaAtual, lastUpdate, loading: rodadaLoading } = useOptimizedRodadas();
   const { equipes, loading: equipesLoading } = useEquipes();
   const { appState, updateSelectedTeam } = useAppState();
   const [equipeAtual, setEquipeAtual] = useState<any>(null);
@@ -153,6 +153,22 @@ const EquipeScreen = ({ teamName, teamId }: EquipeScreenProps) => {
                 </>
               )}
             </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Aguarda o primeiro fetch do banco antes de renderizar o estado da rodada
+  // evitando exibir rodada desatualizada/vazia em dispositivos recém-conectados
+  if (rodadaLoading && !rodadaAtual) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 to-orange-100 p-4">
+        <Card className="shadow-lg border-2 border-yellow-200 max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <div className="text-5xl mb-4 animate-spin inline-block">🍕</div>
+            <h2 className="text-xl font-bold text-yellow-700 mb-2">Sincronizando com o servidor...</h2>
+            <p className="text-sm text-gray-600">Buscando rodada ativa, tempo e sabor atual</p>
           </CardContent>
         </Card>
       </div>

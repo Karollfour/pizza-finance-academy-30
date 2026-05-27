@@ -19,7 +19,7 @@ interface MontadorPizzaProps {
 const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }: MontadorPizzaProps) => {
   const { produtos } = useProdutos();
   const { registrarCompra } = useCompras();
-  const { rodadaAtual } = useRodadas();
+  const { rodadaAtual, loading: rodadaLoading } = useRodadas();
   const { marcarPizzaPronta } = usePizzas();
   const { sabores } = useSabores();
   const [ingredientesSelecionados, setIngredientesSelecionados] = useState<string[]>([]);
@@ -338,11 +338,12 @@ const MontadorPizza = ({ equipeId, equipeNome, saldoDisponivel, onPizzaMontada }
               montandoPizza || 
               produtosDisponiveis.length === 0 ||
               saboresDisponiveis.length === 0 ||
-              rodadaAtual?.status !== 'ativa'
+              rodadaAtual?.status !== 'ativa' ||
+              rodadaLoading
             }
             className="w-full h-14 text-lg bg-green-500 hover:bg-green-600"
           >
-            {montandoPizza ? '🔄 Montando Pizza...' : rodadaAtual?.status === 'pausada' ? '⏸️ Rodada Pausada' : '🍕 Confirmar Pizza'}
+            {rodadaLoading ? '⏳ Sincronizando...' : montandoPizza ? '🔄 Montando Pizza...' : rodadaAtual?.status === 'pausada' ? '⏸️ Rodada Pausada' : '🍕 Confirmar Pizza'}
           </Button>
 
         </div>

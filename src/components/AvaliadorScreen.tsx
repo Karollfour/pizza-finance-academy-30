@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import HistoricoAvaliador from './HistoricoAvaliador';
 
 const AvaliadorScreen = () => {
-  const { rodadaAtual } = useRodadas();
+  const { rodadaAtual, loading: rodadaLoading } = useRodadas();
   const { equipes } = useEquipes();
   const [equipeParaAvaliar, setEquipeParaAvaliar] = useState<string | null>(null);
   // IMPORTANTE: NÃO filtrar por rodadaAtual.id — pizzas pendentes devem permanecer visíveis
@@ -119,6 +119,21 @@ const AvaliadorScreen = () => {
   const getSaborPizza = (pizza: any) => {
     return pizza.sabor?.nome || 'Sabor não informado';
   };
+
+  // Aguardar fetch inicial do banco para refletir o estado real (rodada atual)
+  if (rodadaLoading && !rodadaAtual) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 p-6">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <div className="text-5xl mb-4 animate-spin inline-block">🍕</div>
+            <h2 className="text-xl font-bold text-purple-700 mb-2">Sincronizando com o servidor...</h2>
+            <p className="text-sm text-gray-600">Carregando estado atual da rodada</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Se não selecionou equipe ainda, mostrar seletor
   if (!equipeParaAvaliar) {
