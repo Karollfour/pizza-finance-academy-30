@@ -275,30 +275,24 @@ export const useSabores = () => {
           
           if (payload.eventType === 'INSERT') {
             const novoSabor = payload.new as SaborPizza;
-            // Aplicar mesma lógica de filtro
-            if (novoSabor.nome === 'Pepperoni' || 
-                (novoSabor.nome === 'Mussarela' && novoSabor.imagem && !novoSabor.descricao)) {
-              const saborFormatado: Sabor = {
-                ...novoSabor,
-                ingredientes: []
-              };
-              setSabores(prev => [...prev, saborFormatado]);
+            if (novoSabor.disponivel) {
+              const saborFormatado: Sabor = { ...novoSabor, ingredientes: [] };
+              setSabores(prev => prev.find(s => s.id === saborFormatado.id) ? prev : [...prev, saborFormatado]);
             }
           } else if (payload.eventType === 'UPDATE') {
             const saborAtualizado = payload.new as SaborPizza;
-            if (saborAtualizado.nome === 'Pepperoni' || 
-                (saborAtualizado.nome === 'Mussarela' && saborAtualizado.imagem && !saborAtualizado.descricao)) {
-              const saborFormatado: Sabor = {
-                ...saborAtualizado,
-                ingredientes: []
-              };
-              setSabores(prev => prev.map(sabor => 
-                sabor.id === saborFormatado.id ? saborFormatado : sabor
-              ));
+            if (saborAtualizado.disponivel) {
+              const saborFormatado: Sabor = { ...saborAtualizado, ingredientes: [] };
+              setSabores(prev => {
+                const existe = prev.find(s => s.id === saborFormatado.id);
+                return existe
+                  ? prev.map(s => s.id === saborFormatado.id ? saborFormatado : s)
+                  : [...prev, saborFormatado];
+              });
             } else {
-              // Remover se não atende mais aos critérios
               setSabores(prev => prev.filter(sabor => sabor.id !== saborAtualizado.id));
             }
+
           } else if (payload.eventType === 'DELETE') {
             const saborRemovido = payload.old as SaborPizza;
             setSabores(prev => prev.filter(sabor => sabor.id !== saborRemovido.id));
