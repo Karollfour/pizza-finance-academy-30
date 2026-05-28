@@ -242,6 +242,31 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
     return '#ef4444'; // Vermelho para crítico
   };
 
+  // Se for a primeira rodada, não exibir o gráfico (após todos os hooks)
+  if (isPrimeiraRodada && rodadaAtual) {
+    return (
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>📊 Takt Time Médio por Equipe</span>
+            <div className="text-sm text-gray-600">
+              Analisando Rodada {rodadaAtual.numero}
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12 text-gray-500">
+            <div className="text-6xl mb-4">🎯</div>
+            <p className="text-lg mb-2">📊 Primeira Rodada</p>
+            <p className="text-sm">
+              O gráfico de Takt Time médio será exibido a partir da segunda rodada, quando houver dados de referência para comparação.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="mt-6">
       <CardHeader>
