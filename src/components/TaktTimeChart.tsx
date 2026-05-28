@@ -77,31 +77,6 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
     carregarConfig();
   }, [rodadaAtual]);
 
-  // Se for a primeira rodada, não exibir o gráfico
-  if (isPrimeiraRodada) {
-    return (
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>📊 Takt Time Médio por Equipe</span>
-            <div className="text-sm text-gray-600">
-              Analisando Rodada {rodadaAtual.numero}
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-gray-500">
-            <div className="text-6xl mb-4">🎯</div>
-            <p className="text-lg mb-2">📊 Primeira Rodada</p>
-            <p className="text-sm">
-              O gráfico de Takt Time médio será exibido a partir da segunda rodada, quando houver dados de referência para comparação.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Calcular dados do Takt Time por equipe para gráfico de barras
   const dadosTaktTimePorEquipe = useMemo(() => {
     if (!rodadaAtual || !configRodada) {
