@@ -16,6 +16,7 @@ const GerenciadorSabores = () => {
     nome: string;
     descricao: string;
     cor: string;
+    valor: number;
     ingredientes: string[];
     imagem: File | null;
   }) => {
@@ -27,36 +28,27 @@ const GerenciadorSabores = () => {
             nome: formData.nome,
             descricao: formData.descricao,
             ingredientes: formData.ingredientes,
-            ...({ cor: formData.cor } as any)
+            ...({ cor: formData.cor, valor: formData.valor } as any),
           },
-          formData.imagem || undefined
+          formData.imagem || undefined,
         );
-        toast({
-          title: "Sabor atualizado com sucesso!",
-          description: `O sabor ${formData.nome} foi atualizado.`
-        });
+        toast({ title: 'Sabor atualizado com sucesso!', description: `O sabor ${formData.nome} foi atualizado.` });
       } else {
         await criarSabor(
           formData.nome,
           formData.descricao,
           formData.ingredientes,
           formData.imagem || undefined,
-          formData.cor
+          formData.cor,
+          formData.valor,
         );
-        toast({
-          title: "Sabor criado com sucesso!",
-          description: `O sabor ${formData.nome} foi adicionado.`
-        });
+        toast({ title: 'Sabor criado com sucesso!', description: `O sabor ${formData.nome} foi adicionado.` });
       }
-      
+
       resetForm();
       setModalAberto(false);
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível salvar o sabor.",
-        variant: "destructive"
-      });
+      toast({ title: 'Erro', description: 'Não foi possível salvar o sabor.', variant: 'destructive' });
     }
   };
 
