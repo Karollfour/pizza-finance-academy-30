@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ interface FormularioSaborProps {
     nome: string;
     descricao: string;
     cor: string;
+    valor: number;
     ingredientes: string[];
     imagem: File | null;
   }) => Promise<void>;
@@ -41,14 +42,15 @@ export const FormularioSabor = ({
   produtos,
   modalAberto,
   setModalAberto,
-  resetForm
+  resetForm,
 }: FormularioSaborProps) => {
   const [formData, setFormData] = useState({
     nome: saborEditando?.nome || '',
     descricao: saborEditando?.descricao || '',
     cor: (saborEditando as any)?.cor || '#FCD34D',
+    valor: Number((saborEditando as any)?.valor || 0),
     ingredientes: saborEditando?.ingredientes || [],
-    imagem: null as File | null
+    imagem: null as File | null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,24 +60,15 @@ export const FormularioSabor = ({
 
   const adicionarIngrediente = (produtoId: string) => {
     if (!formData.ingredientes.includes(produtoId)) {
-      setFormData(prev => ({
-        ...prev,
-        ingredientes: [...prev.ingredientes, produtoId]
-      }));
+      setFormData((prev) => ({ ...prev, ingredientes: [...prev.ingredientes, produtoId] }));
     }
   };
 
   const removerIngrediente = (produtoId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      ingredientes: prev.ingredientes.filter(id => id !== produtoId)
-    }));
+    setFormData((prev) => ({ ...prev, ingredientes: prev.ingredientes.filter((id) => id !== produtoId) }));
   };
 
-  const getProdutoNome = (produtoId: string) => {
-    const produto = produtos.find(p => p.id === produtoId);
-    return produto?.nome || 'Produto não encontrado';
-  };
+  const getProdutoNome = (produtoId: string) => produtos.find((p) => p.id === produtoId)?.nome || 'Produto não encontrado';
 
   return (
     <Dialog open={modalAberto} onOpenChange={setModalAberto}>
@@ -85,40 +78,42 @@ export const FormularioSabor = ({
           Novo Sabor
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {saborEditando ? 'Editar Sabor' : 'Novo Sabor'}
-          </DialogTitle>
+          <DialogTitle>{saborEditando ? 'Editar Sabor' : 'Novo Sabor'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Nome</label>
+            <Label>Nome do sabor</Label>
+            <Input value={formData.nome} onChange={(e) => setFormData((p) => ({ ...p, nome: e.target.value }))} required />
+          </div>
+
+          <div>
+            <Label>Descrição</Label>
+            <Textarea value={formData.descricao} onChange={(e) => setFormData((p) => ({ ...p, descricao: e.target.value }))} rows={3} />
+          </div>
+
+          <div>
+            <Label>Valor da pizza ($)</Label>
             <Input
-              value={formData.nome}
-              onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-              required
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.valor}
+              onChange={(e) => setFormData((p) => ({ ...p, valor: Number(e.target.value) }))}
+              placeholder="0.00"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Descrição</label>
-            <Textarea
-              value={formData.descricao}
-              onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Cor de identificação</label>
+            <Label className="mb-2 block">Cor de identificação</Label>
             <div className="flex items-center gap-3">
               <div className="flex flex-wrap gap-2">
                 {CORES_PRESET.map((c) => (
                   <button
                     type="button"
                     key={c.value}
-                    onClick={() => setFormData(prev => ({ ...prev, cor: c.value }))}
+                    onClick={() => setFormData((p) => ({ ...p, cor: c.value }))}
                     title={c.label}
                     className={`w-7 h-7 rounded-full border-2 transition-transform ${
                       formData.cor === c.value ? 'border-foreground scale-110' : 'border-transparent'
@@ -128,38 +123,26 @@ export const FormularioSabor = ({
                   />
                 ))}
               </div>
-              <Input
-                type="color"
-                value={formData.cor}
-                onChange={(e) => setFormData(prev => ({ ...prev, cor: e.target.value }))}
-                className="w-12 h-9 p-1 cursor-pointer"
-              />
+              <Input type="color" value={formData.cor} onChange={(e) => setFormData((p) => ({ ...p, cor: e.target.value }))} className="w-12 h-9 p-1 cursor-pointer" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Imagem</label>
+            <Label>Imagem</Label>
             <div className="flex items-center space-x-2">
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  imagem: e.target.files?.[0] || null
-                }))}
-              />
+              <Input type="file" accept="image/*" onChange={(e) => setFormData((p) => ({ ...p, imagem: e.target.files?.[0] || null }))} />
               <ImagePlus className="w-4 h-4" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Ingredientes</label>
+            <Label className="mb-2 block">Ingredientes</Label>
             <Select onValueChange={adicionarIngrediente}>
               <SelectTrigger>
                 <SelectValue placeholder="Adicionar ingrediente" />
               </SelectTrigger>
               <SelectContent>
-                {produtos.map(produto => (
+                {produtos.map((produto) => (
                   <SelectItem key={produto.id} value={produto.id}>
                     {produto.nome}
                   </SelectItem>
@@ -168,13 +151,8 @@ export const FormularioSabor = ({
             </Select>
 
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.ingredientes.map(ingredienteId => (
-                <Badge
-                  key={ingredienteId}
-                  variant="secondary"
-                  className="cursor-pointer"
-                  onClick={() => removerIngrediente(ingredienteId)}
-                >
+              {formData.ingredientes.map((ingredienteId) => (
+                <Badge key={ingredienteId} variant="secondary" className="cursor-pointer" onClick={() => removerIngrediente(ingredienteId)}>
                   {getProdutoNome(ingredienteId)} ✕
                 </Badge>
               ))}
@@ -185,11 +163,7 @@ export const FormularioSabor = ({
             <Button type="submit" className="flex-1">
               {saborEditando ? 'Atualizar' : 'Criar'}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setModalAberto(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setModalAberto(false)}>
               Cancelar
             </Button>
           </div>

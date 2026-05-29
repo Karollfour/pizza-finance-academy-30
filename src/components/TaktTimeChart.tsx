@@ -221,8 +221,8 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
       return (
         <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
           <p className="font-semibold">{data.equipeNome}</p>
-          <p className="text-blue-600">{`Takt Time Médio: ${data.taktTimeMedio}s`}</p>
-          <p className="text-orange-600">{`Tempo Médio da Rodada: ${data.tempoMedioRodada.toFixed(1)}s`}</p>
+          <p className="text-blue-600">{`Meta Takt Time: ${data.taktTimeMedio}s`}</p>
+          <p className="text-orange-600">{`Meta da Rodada: ${data.tempoMedioRodada.toFixed(1)}s`}</p>
           <p className="text-purple-600">{`Pizzas Enviadas: ${data.pizzasEnviadas}`}</p>
           <p className={`font-medium ${data.dentroDoTempo ? 'text-green-600' : 'text-red-600'}`}>
             {data.dentroDoTempo ? '✓ Dentro do tempo médio' : '✗ Acima do tempo médio'}
@@ -242,36 +242,11 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
     return '#ef4444'; // Vermelho para crítico
   };
 
-  // Se for a primeira rodada, não exibir o gráfico (após todos os hooks)
-  if (isPrimeiraRodada && rodadaAtual) {
-    return (
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>📊 Takt Time Médio por Equipe</span>
-            <div className="text-sm text-gray-600">
-              Analisando Rodada {rodadaAtual.numero}
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-gray-500">
-            <div className="text-6xl mb-4">🎯</div>
-            <p className="text-lg mb-2">📊 Primeira Rodada</p>
-            <p className="text-sm">
-              O gráfico de Takt Time médio será exibido a partir da segunda rodada, quando houver dados de referência para comparação.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>📊 Takt Time Médio por Equipe</span>
+          <span>📊 Meta Takt Time por Equipe</span>
           <div className="text-sm text-gray-600">
             {rodadaAtual ? `Analisando Rodada ${rodadaAtual.numero}` : 'Nenhuma rodada selecionada'}
           </div>
@@ -300,7 +275,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                 />
                 <YAxis 
                   label={{
-                    value: 'Takt Time Médio (segundos)',
+                    value: 'Meta Takt Time (segundos)',
                     angle: -90,
                     position: 'insideLeft'
                   }} 
@@ -314,7 +289,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                   strokeWidth={2} 
                   strokeDasharray="4 4" 
                   label={{
-                    value: `Tempo Médio da Rodada: ${dadosTaktTimePorEquipe.tempoMedioRodada.toFixed(1)}s`,
+                    value: `Meta da Rodada: ${dadosTaktTimePorEquipe.tempoMedioRodada.toFixed(1)}s`,
                     position: 'top',
                     fontSize: 12
                   }} 
@@ -322,7 +297,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                 
                 <Bar 
                   dataKey="taktTimeMedio" 
-                  name="Takt Time Médio" 
+                  name="Meta Takt Time" 
                   shape={(props: any) => {
                     const { fill, ...rest } = props;
                     return <rect {...rest} fill={obterCorBarra(props.payload)} />;

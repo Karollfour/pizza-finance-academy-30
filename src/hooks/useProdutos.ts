@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProdutoLoja } from '@/types/database';
@@ -20,7 +19,7 @@ export const useProdutos = () => {
         .order('nome');
 
       if (error) throw error;
-      setProdutos(data || []);
+      setProdutos((data || []) as ProdutoLoja[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar produtos');
     } finally {
@@ -52,15 +51,15 @@ export const useProdutos = () => {
   };
 
   const criarProduto = async (
-    nome: string, 
-    unidade: string, 
-    valorUnitario: number, 
-    durabilidade?: number, 
-    descricao?: string, 
+    nome: string,
+    unidade: string,
+    valorUnitario: number,
+    tipo: 'EQ' | 'MP' = 'MP',
+    descricao?: string,
     imagemFile?: File
   ) => {
     try {
-      let imagemUrl = null;
+      let imagemUrl: string | null = null;
       if (imagemFile) {
         imagemUrl = await uploadImagem(imagemFile);
       }
@@ -71,10 +70,11 @@ export const useProdutos = () => {
           nome,
           unidade,
           valor_unitario: valorUnitario,
-          durabilidade: durabilidade || 1,
+          durabilidade: 1,
+          tipo,
           descricao,
-          imagem: imagemUrl
-        })
+          imagem: imagemUrl,
+        } as any)
         .select()
         .single();
 
@@ -87,19 +87,19 @@ export const useProdutos = () => {
     }
   };
 
-  const atualizarProduto = async (id: string, dados: Partial<ProdutoLoja>, imagemFile?: File) => {
+  const atualizarProduto = async (id: string, dados: Partial<ProdutoLoja> & { tipo?: 'EQ' | 'MP' }, imagemFile?: File) => {
     try {
-      let imagemUrl = dados.imagem;
+      let imagemUrl = (dados as any).imagem;
       if (imagemFile) {
         imagemUrl = await uploadImagem(imagemFile);
       }
 
+      const payload: any = { ...dados };
+      if (imagemFile) payload.imagem = imagemUrl;
+
       const { error } = await supabase
         .from('produtos_loja')
-        .update({
-          ...dados,
-          imagem: imagemUrl
-        })
+        .update(payload)
         .eq('id', id);
 
       if (error) throw error;
@@ -113,33 +113,21 @@ export const useProdutos = () => {
   useEffect(() => {
     fetchProdutos();
 
-    // Cleanup any existing subscription
     if (channelRef.current && isSubscribedRef.current) {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
       isSubscribedRef.current = false;
     }
 
-    // Create unique channel name with timestamp and random component
     const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const channelName = `produtos-updates-${uniqueId}`;
-    
+
     const channel = supabase
       .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'produtos_loja'
-        },
-        () => {
-          console.log('Produto atualizado, recarregando...');
-          fetchProdutos();
-        }
-      );
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'produtos_loja' }, () => {
+        fetchProdutos();
+      });
 
-    // Subscribe only once
     if (!isSubscribedRef.current) {
       channel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
@@ -164,6 +152,6 @@ export const useProdutos = () => {
     error,
     criarProduto,
     atualizarProduto,
-    refetch: fetchProdutos
+    refetch: fetchProdutos,
   };
 };

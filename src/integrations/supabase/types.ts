@@ -373,6 +373,7 @@ export type Database = {
           id: string
           imagem: string | null
           nome: string
+          tipo: string
           unidade: string
           valor_unitario: number
         }
@@ -384,6 +385,7 @@ export type Database = {
           id?: string
           imagem?: string | null
           nome: string
+          tipo?: string
           unidade?: string
           valor_unitario?: number
         }
@@ -395,6 +397,7 @@ export type Database = {
           id?: string
           imagem?: string | null
           nome?: string
+          tipo?: string
           unidade?: string
           valor_unitario?: number
         }
@@ -487,6 +490,7 @@ export type Database = {
           id: string
           imagem: string | null
           nome: string
+          valor: number
         }
         Insert: {
           cor?: string
@@ -496,6 +500,7 @@ export type Database = {
           id?: string
           imagem?: string | null
           nome: string
+          valor?: number
         }
         Update: {
           cor?: string
@@ -505,6 +510,7 @@ export type Database = {
           id?: string
           imagem?: string | null
           nome?: string
+          valor?: number
         }
         Relationships: []
       }
