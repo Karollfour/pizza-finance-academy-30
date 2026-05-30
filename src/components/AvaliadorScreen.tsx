@@ -20,6 +20,7 @@ const AvaliadorScreen = () => {
   // IMPORTANTE: NÃO filtrar por rodadaAtual.id — pizzas pendentes devem permanecer visíveis
   // mesmo após a rodada terminar, até serem avaliadas.
   const { pizzas, avaliarPizza } = usePizzas(equipeParaAvaliar || undefined);
+  const { historico: saboresEsperados } = useHistoricoSaboresRodada(rodadaAtual?.id);
   const [motivosReprovacao, setMotivosReprovacao] = useState<{ [key: string]: string }>({});
   const [avaliandoIds, setAvaliandoIds] = useState<Set<string>>(new Set());
 
