@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePizzas } from '@/hooks/usePizzas';
 import { useEquipes } from '@/hooks/useEquipes';
 import { useRodadas } from '@/hooks/useRodadas';
+import { useHistoricoSaboresRodada } from '@/hooks/useHistoricoSaboresRodada';
 import { toast } from 'sonner';
 import HistoricoAvaliador from './HistoricoAvaliador';
 
