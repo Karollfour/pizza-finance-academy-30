@@ -286,6 +286,50 @@ const AvaliadorScreen = () => {
                         </div>
                       </div>
 
+                      {/* Comparador: Sabor solicitado x Sabor produzido */}
+                      {(() => {
+                        const numPedido = getNumeroPedido(pizza);
+                        const esperado = saboresEsperados.find(s => s.ordem === numPedido);
+                        const corEsperado = (esperado?.sabor?.cor as string) || '#9CA3AF';
+                        const nomeEsperado = esperado?.sabor?.nome || '— não definido —';
+                        const corProduzido = ((pizza as any).sabor?.cor as string) || '#9CA3AF';
+                        const nomeProduzido = (pizza as any).sabor?.nome || 'Sem sabor';
+                        const coincidem = esperado && (pizza as any).sabor_id === esperado.sabor_id;
+                        return (
+                          <div className={`p-3 rounded-lg border-2 ${
+                            esperado
+                              ? (coincidem ? 'border-green-400 bg-green-50' : 'border-orange-400 bg-orange-50')
+                              : 'border-gray-200 bg-gray-50'
+                          }`}>
+                            <div className="text-xs font-medium mb-2 text-gray-700">
+                              🔍 Comparador (Pedido #{numPedido})
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <div className="text-[11px] text-gray-500 mb-1">Solicitado pelo carrossel</div>
+                                <div className="flex items-center gap-2">
+                                  <span className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: corEsperado }} />
+                                  <span className="font-medium">{nomeEsperado}</span>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[11px] text-gray-500 mb-1">Produzido pela equipe</div>
+                                <div className="flex items-center gap-2">
+                                  <span className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: corProduzido }} />
+                                  <span className="font-medium">{nomeProduzido}</span>
+                                </div>
+                              </div>
+                            </div>
+                            {esperado && (
+                              <div className={`mt-2 text-xs font-semibold ${coincidem ? 'text-green-700' : 'text-orange-700'}`}>
+                                {coincidem ? '✅ Sabores coincidem' : '⚠️ Sabores divergem — verifique antes de aprovar'}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+
                       {/* Dropdown de Motivo de Reprovação */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">
