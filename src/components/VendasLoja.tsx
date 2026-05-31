@@ -30,18 +30,19 @@ const VendasLoja = () => {
   const { equipes } = useEquipes();
   const { produtos } = useProdutos();
   const { rodadaAtual } = useOptimizedRodadas();
+  const { rodadas } = useTodasRodadas();
   const [equipeId, setEquipeId] = useState('');
   const [equipePopoverOpen, setEquipePopoverOpen] = useState(false);
   const [filtroTipo, setFiltroTipo] = useState<FiltroTipo>('TODOS');
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
   const [cobrancaViagem, setCobrancaViagem] = useState(true);
   const [descricaoVenda, setDescricaoVenda] = useState('');
-
-  const calcularGastoTotalEquipe = (eqId: string) =>
-    compras.filter(c => c.equipe_id === eqId).reduce((t, c) => t + c.valor_total, 0);
+  const [filtroRodadas, setFiltroRodadas] = useState<string[]>([]);
+  const [filtroProdutos, setFiltroProdutos] = useState<string[]>([]);
 
   const calcularSaldoDisponivel = (equipe: any) =>
-    equipe.saldo_inicial + (equipe.ganho_total || 0) - calcularGastoTotalEquipe(equipe.id);
+    Number(equipe.saldo_inicial || 0);
+
 
   const adicionarAoCarrinho = (produtoId: string) => {
     const produto = produtos.find(p => p.id === produtoId);
