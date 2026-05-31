@@ -11,9 +11,11 @@ import { useCompras } from '@/hooks/useCompras';
 import { useEquipes } from '@/hooks/useEquipes';
 import { useProdutos } from '@/hooks/useProdutos';
 import { useOptimizedRodadas } from '@/hooks/useOptimizedRodadas';
+import { useTodasRodadas } from '@/hooks/useTodasRodadas';
 import { toast } from 'sonner';
-import { Trash2, Plus, Minus, Check, ChevronsUpDown } from 'lucide-react';
+import { Trash2, Plus, Minus, Check, ChevronsUpDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
 
 interface ItemCarrinho {
   produtoId: string;
@@ -28,18 +30,25 @@ const VendasLoja = () => {
   const { equipes } = useEquipes();
   const { produtos } = useProdutos();
   const { rodadaAtual } = useOptimizedRodadas();
+  const { rodadas } = useTodasRodadas();
   const [equipeId, setEquipeId] = useState('');
   const [equipePopoverOpen, setEquipePopoverOpen] = useState(false);
   const [filtroTipo, setFiltroTipo] = useState<FiltroTipo>('TODOS');
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
   const [cobrancaViagem, setCobrancaViagem] = useState(true);
   const [descricaoVenda, setDescricaoVenda] = useState('');
+  const [filtroRodadas, setFiltroRodadas] = useState<string[]>([]);
+  const [filtroProdutos, setFiltroProdutos] = useState<string[]>([]);
 
-  const calcularGastoTotalEquipe = (eqId: string) =>
-    compras.filter(c => c.equipe_id === eqId).reduce((t, c) => t + c.valor_total, 0);
+  const gastoNaRodadaAtual = (eqId: string) =>
+    compras
+      .filter(c => c.equipe_id === eqId && rodadaAtual?.id && c.rodada_id === rodadaAtual.id)
+      .reduce((t, c) => t + Number(c.valor_total || 0), 0);
 
   const calcularSaldoDisponivel = (equipe: any) =>
-    equipe.saldo_inicial + (equipe.ganho_total || 0) - calcularGastoTotalEquipe(equipe.id);
+    Number(equipe.saldo_inicial || 0) - gastoNaRodadaAtual(equipe.id);
+
+
 
   const adicionarAoCarrinho = (produtoId: string) => {
     const produto = produtos.find(p => p.id === produtoId);
@@ -109,9 +118,32 @@ const VendasLoja = () => {
       .filter(p => filtroTipo === 'TODOS' || (p as any).tipo === filtroTipo);
   }, [produtos, filtroTipo]);
 
-  const vendas5Recentes = [...compras]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5);
+  const vendasOrdenadas = useMemo(
+    () => [...compras].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    [compras]
+  );
+
+  const vendasFiltradas = useMemo(() => {
+    return vendasOrdenadas.filter(v => {
+      const okRodada = filtroRodadas.length === 0 || (v.rodada_id && filtroRodadas.includes(v.rodada_id));
+      const okProduto = filtroProdutos.length === 0 || (v.produto_id && filtroProdutos.includes(v.produto_id));
+      return okRodada && okProduto;
+    });
+  }, [vendasOrdenadas, filtroRodadas, filtroProdutos]);
+
+  const toggleRodadaFiltro = (id: string) =>
+    setFiltroRodadas(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const toggleProdutoFiltro = (id: string) =>
+    setFiltroProdutos(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const limparFiltrosVendas = () => { setFiltroRodadas([]); setFiltroProdutos([]); };
+
+  const getRodadaNumero = (id: string | null) => id ? (rodadas.find(r => r.id === id)?.numero ?? '?') : '-';
+  const getProdutoNome = (id: string | null) => id ? (produtos.find(p => p.id === id)?.nome || 'Produto') : 'Viagem';
+  const produtosUsadosEmVendas = useMemo(() => {
+    const ids = new Set(compras.map(c => c.produto_id).filter(Boolean) as string[]);
+    return produtos.filter(p => ids.has(p.id));
+  }, [compras, produtos]);
+
 
   return (
     <div className="space-y-6">
@@ -317,29 +349,102 @@ const VendasLoja = () => {
       {/* Vendas Recentes */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-blue-600">🕒 Vendas Recentes</CardTitle>
+          <CardTitle className="text-blue-600 flex items-center justify-between flex-wrap gap-2">
+            <span>🕒 Vendas Recentes</span>
+            <span className="text-xs font-normal text-gray-500">
+              Mostrando {vendasFiltradas.length} de {vendasOrdenadas.length} vendas
+            </span>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Filtros */}
           <div className="space-y-3">
-            {vendas5Recentes.length === 0 ? (
+            <div>
+              <div className="text-xs font-medium text-gray-600 mb-1">Filtrar por rodada</div>
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  onClick={() => setFiltroRodadas([])}
+                  className={cn(
+                    'cursor-pointer px-3 py-1 text-xs',
+                    filtroRodadas.length === 0
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                  )}
+                >
+                  Todas
+                </Badge>
+                {rodadas.map(r => (
+                  <Badge
+                    key={r.id}
+                    onClick={() => toggleRodadaFiltro(r.id)}
+                    className={cn(
+                      'cursor-pointer px-3 py-1 text-xs',
+                      filtroRodadas.includes(r.id)
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    )}
+                  >
+                    Rodada {r.numero}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {produtosUsadosEmVendas.length > 0 && (
+              <div>
+                <div className="text-xs font-medium text-gray-600 mb-1">Filtrar por produto</div>
+                <div className="flex flex-wrap gap-2">
+                  {produtosUsadosEmVendas.map(p => (
+                    <Badge
+                      key={p.id}
+                      onClick={() => toggleProdutoFiltro(p.id)}
+                      className={cn(
+                        'cursor-pointer px-3 py-1 text-xs',
+                        filtroProdutos.includes(p.id)
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      )}
+                    >
+                      {p.nome}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(filtroRodadas.length > 0 || filtroProdutos.length > 0) && (
+              <Button variant="outline" size="sm" onClick={limparFiltrosVendas}>
+                <X className="w-3 h-3 mr-1" /> Limpar filtros
+              </Button>
+            )}
+          </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            {vendasFiltradas.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 <div className="text-4xl mb-2">💰</div>
-                <p>Nenhuma venda registrada</p>
+                <p>Nenhuma venda encontrada</p>
               </div>
-            ) : vendas5Recentes.map(venda => (
+            ) : vendasFiltradas.map(venda => (
               <div key={venda.id} className="p-3 bg-gray-50 rounded-lg">
-                <div className="flex justify-between items-start">
-                  <div>
+                <div className="flex justify-between items-start gap-2 flex-wrap">
+                  <div className="min-w-0">
                     <div className="font-medium">{getEquipeNome(venda.equipe_id)}</div>
-                    <div className="text-sm text-gray-600">
-                      {venda.produto_id ? produtos.find(p => p.id === venda.produto_id)?.nome || 'Produto' : 'Viagem'} • {new Date(venda.created_at).toLocaleString('pt-BR')}
+                    <div className="text-sm text-gray-700">
+                      {getProdutoNome(venda.produto_id)}
+                      {venda.quantidade ? ` • ${Number(venda.quantidade)} un` : ''}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Rodada {getRodadaNumero(venda.rodada_id)} • {new Date(venda.created_at).toLocaleString('pt-BR')}
                     </div>
                   </div>
                   <div className="text-right">
                     <Badge variant={venda.tipo === 'material' ? 'default' : 'secondary'}>
                       {venda.tipo === 'material' ? '🛒' : '🚗'}
                     </Badge>
-                    <div className="text-green-600 font-semibold">$ {venda.valor_total.toFixed(2)}</div>
+                    <div className="text-green-600 font-semibold">$ {Number(venda.valor_total).toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -347,6 +452,7 @@ const VendasLoja = () => {
           </div>
         </CardContent>
       </Card>
+
     </div>
   );
 };
