@@ -40,8 +40,14 @@ const VendasLoja = () => {
   const [filtroRodadas, setFiltroRodadas] = useState<string[]>([]);
   const [filtroProdutos, setFiltroProdutos] = useState<string[]>([]);
 
+  const gastoNaRodadaAtual = (eqId: string) =>
+    compras
+      .filter(c => c.equipe_id === eqId && rodadaAtual?.id && c.rodada_id === rodadaAtual.id)
+      .reduce((t, c) => t + Number(c.valor_total || 0), 0);
+
   const calcularSaldoDisponivel = (equipe: any) =>
-    Number(equipe.saldo_inicial || 0);
+    Number(equipe.saldo_inicial || 0) - gastoNaRodadaAtual(equipe.id);
+
 
 
   const adicionarAoCarrinho = (produtoId: string) => {
