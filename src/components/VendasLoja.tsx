@@ -11,9 +11,11 @@ import { useCompras } from '@/hooks/useCompras';
 import { useEquipes } from '@/hooks/useEquipes';
 import { useProdutos } from '@/hooks/useProdutos';
 import { useOptimizedRodadas } from '@/hooks/useOptimizedRodadas';
+import { useTodasRodadas } from '@/hooks/useTodasRodadas';
 import { toast } from 'sonner';
-import { Trash2, Plus, Minus, Check, ChevronsUpDown } from 'lucide-react';
+import { Trash2, Plus, Minus, Check, ChevronsUpDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
 
 interface ItemCarrinho {
   produtoId: string;
