@@ -118,9 +118,32 @@ const VendasLoja = () => {
       .filter(p => filtroTipo === 'TODOS' || (p as any).tipo === filtroTipo);
   }, [produtos, filtroTipo]);
 
-  const vendas5Recentes = [...compras]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5);
+  const vendasOrdenadas = useMemo(
+    () => [...compras].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    [compras]
+  );
+
+  const vendasFiltradas = useMemo(() => {
+    return vendasOrdenadas.filter(v => {
+      const okRodada = filtroRodadas.length === 0 || (v.rodada_id && filtroRodadas.includes(v.rodada_id));
+      const okProduto = filtroProdutos.length === 0 || (v.produto_id && filtroProdutos.includes(v.produto_id));
+      return okRodada && okProduto;
+    });
+  }, [vendasOrdenadas, filtroRodadas, filtroProdutos]);
+
+  const toggleRodadaFiltro = (id: string) =>
+    setFiltroRodadas(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const toggleProdutoFiltro = (id: string) =>
+    setFiltroProdutos(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const limparFiltrosVendas = () => { setFiltroRodadas([]); setFiltroProdutos([]); };
+
+  const getRodadaNumero = (id: string | null) => id ? (rodadas.find(r => r.id === id)?.numero ?? '?') : '-';
+  const getProdutoNome = (id: string | null) => id ? (produtos.find(p => p.id === id)?.nome || 'Produto') : 'Viagem';
+  const produtosUsadosEmVendas = useMemo(() => {
+    const ids = new Set(compras.map(c => c.produto_id).filter(Boolean) as string[]);
+    return produtos.filter(p => ids.has(p.id));
+  }, [compras, produtos]);
+
 
   return (
     <div className="space-y-6">
