@@ -126,11 +126,20 @@ const VendasLoja = () => {
 
   const vendasFiltradas = useMemo(() => {
     return vendasOrdenadas.filter(v => {
+      const okEquipe = !equipeId || v.equipe_id === equipeId;
       const okRodada = filtroRodadas.length === 0 || (v.rodada_id && filtroRodadas.includes(v.rodada_id));
       const okProduto = filtroProdutos.length === 0 || (v.produto_id && filtroProdutos.includes(v.produto_id));
-      return okRodada && okProduto;
+      return okEquipe && okRodada && okProduto;
     });
-  }, [vendasOrdenadas, filtroRodadas, filtroProdutos]);
+  }, [vendasOrdenadas, equipeId, filtroRodadas, filtroProdutos]);
+
+  const handleAdicionarComFeedback = (produtoId: string) => {
+    adicionarAoCarrinho(produtoId);
+    setProdutoFlash(produtoId);
+    window.setTimeout(() => {
+      setProdutoFlash(prev => (prev === produtoId ? null : prev));
+    }, 700);
+  };
 
   const toggleRodadaFiltro = (id: string) =>
     setFiltroRodadas(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
