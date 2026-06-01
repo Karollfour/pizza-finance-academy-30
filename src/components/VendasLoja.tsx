@@ -383,6 +383,14 @@ const VendasLoja = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className={cn(
+            'text-sm px-3 py-2 rounded-md border',
+            equipeSelecionada
+              ? 'bg-blue-50 border-blue-200 text-blue-800 font-medium'
+              : 'bg-gray-50 border-gray-200 text-gray-700'
+          )}>
+            👁️ Vendas de: <span className="font-semibold">{equipeSelecionada ? equipeSelecionada.nome : 'Todas as equipes'}</span>
+          </div>
           {/* Filtros */}
           <div className="space-y-3">
             <div>
