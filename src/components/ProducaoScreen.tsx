@@ -704,7 +704,7 @@ const ProducaoScreen = () => {
         </Card>}
 
       {/* Timer e Status da Rodada - também desabilitado se limite excedido */}
-      {rodadaAtual && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
+      {rodadaAtual && rodadaAtual.status !== 'finalizada' && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-4xl">Rodada {numeroRodadaDisplay}</span>
