@@ -28,6 +28,7 @@ import VisualizadorSaboresRodada from './VisualizadorSaboresRodada';
 import HistoricoTodasRodadas from './HistoricoTodasRodadas';
 import HistoricoSaboresAutomatico from './HistoricoSaboresAutomatico';
 import DashboardLojinha from './DashboardLojinha';
+import CommittedNumberInput from './CommittedNumberInput';
 import ComprasPorEquipe from './ComprasPorEquipe';
 import GestaoEquipes from './GestaoEquipes';
 import GerenciadorItens from './GerenciadorItens';
@@ -652,7 +653,7 @@ const ProducaoScreen = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
               <div>
                 <Label htmlFor="tempoLimite" className="text-lg font-semibold">Tempo por Rodada (segundos)</Label>
-                <Input id="tempoLimite" type="number" value={tempoLimite} onChange={e => setTempoLimite(Number(e.target.value))} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min="60" max="1800" disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="tempoLimite" value={tempoLimite} onCommit={setTempoLimite} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={60} max={1800} disabled={configuracoesBloqueadas} />
                 <div className="text-sm text-gray-600 mt-1">
                   Recomendado: 300s (5 minutos)
                 </div>
@@ -660,7 +661,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroPizzas" className="text-lg font-semibold">Pizzas por Rodada</Label>
-                <Input id="numeroPizzas" type="number" value={numeroPizzas} onChange={e => setNumeroPizzas(Number(e.target.value))} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min="1" max="50" disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroPizzas" value={numeroPizzas} onCommit={setNumeroPizzas} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={1} max={50} disabled={configuracoesBloqueadas} />
                 <div className="text-sm text-gray-600 mt-1">
                   Máximo que cada equipe pode produzir
                 </div>
@@ -668,7 +669,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroRodadas" className="text-lg font-semibold">Total de Rodadas</Label>
-                <Input id="numeroRodadas" type="number" value={numeroRodasUsuario} onChange={e => setNumeroRodasUsuario(Number(e.target.value))} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min="0" max="20" disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroRodadas" value={numeroRodasUsuario} onCommit={setNumeroRodasUsuario} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={0} max={20} disabled={configuracoesBloqueadas} />
                 <div className="text-sm text-gray-600 mt-1">
                   {numeroRodasUsuario === 0 ? 'Ilimitado' : `Total do jogo: ${numeroRodasUsuario} rodadas`}
                 </div>
@@ -703,7 +704,7 @@ const ProducaoScreen = () => {
         </Card>}
 
       {/* Timer e Status da Rodada - também desabilitado se limite excedido */}
-      {rodadaAtual && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
+      {rodadaAtual && rodadaAtual.status !== 'finalizada' && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-4xl">Rodada {numeroRodadaDisplay}</span>

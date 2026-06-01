@@ -39,6 +39,7 @@ const VendasLoja = () => {
   const [descricaoVenda, setDescricaoVenda] = useState('');
   const [filtroRodadas, setFiltroRodadas] = useState<string[]>([]);
   const [filtroProdutos, setFiltroProdutos] = useState<string[]>([]);
+  const [produtoFlash, setProdutoFlash] = useState<string | null>(null);
 
   const gastoNaRodadaAtual = (eqId: string) =>
     compras
@@ -125,11 +126,20 @@ const VendasLoja = () => {
 
   const vendasFiltradas = useMemo(() => {
     return vendasOrdenadas.filter(v => {
+      const okEquipe = !equipeId || v.equipe_id === equipeId;
       const okRodada = filtroRodadas.length === 0 || (v.rodada_id && filtroRodadas.includes(v.rodada_id));
       const okProduto = filtroProdutos.length === 0 || (v.produto_id && filtroProdutos.includes(v.produto_id));
-      return okRodada && okProduto;
+      return okEquipe && okRodada && okProduto;
     });
-  }, [vendasOrdenadas, filtroRodadas, filtroProdutos]);
+  }, [vendasOrdenadas, equipeId, filtroRodadas, filtroProdutos]);
+
+  const handleAdicionarComFeedback = (produtoId: string) => {
+    adicionarAoCarrinho(produtoId);
+    setProdutoFlash(produtoId);
+    window.setTimeout(() => {
+      setProdutoFlash(prev => (prev === produtoId ? null : prev));
+    }, 700);
+  };
 
   const toggleRodadaFiltro = (id: string) =>
     setFiltroRodadas(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -225,7 +235,9 @@ const VendasLoja = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Adicionar Produtos</label>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {produtosFiltrados.map(produto => (
+              {produtosFiltrados.map(produto => {
+                const isFlash = produtoFlash === produto.id;
+                return (
                 <Card key={produto.id} className="cursor-pointer hover:shadow-md transition-shadow">
                   <CardContent className="p-3">
                     {produto.imagem && (
@@ -239,12 +251,26 @@ const VendasLoja = () => {
                     </div>
                     <p className="text-xs text-gray-600">{produto.unidade}</p>
                     <p className="text-sm font-semibold text-green-600">$ {produto.valor_unitario.toFixed(2)}</p>
-                    <Button size="sm" className="w-full mt-2" onClick={() => adicionarAoCarrinho(produto.id)}>
-                      <Plus className="w-3 h-3 mr-1" /> Adicionar
-                    </Button>
+                    <div className="relative mt-2">
+                      <Button
+                        size="sm"
+                        className={cn(
+                          'w-full transition-all duration-200',
+                          isFlash && 'bg-green-500 hover:bg-green-500 scale-110'
+                        )}
+                        onClick={() => handleAdicionarComFeedback(produto.id)}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> {isFlash ? 'Adicionado!' : 'Adicionar'}
+                      </Button>
+                      {isFlash && (
+                        <span className="pointer-events-none absolute -top-3 right-1 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow animate-bounce">
+                          +1
+                        </span>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
-              ))}
+              );})}
             </div>
           </div>
 
@@ -357,6 +383,14 @@ const VendasLoja = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className={cn(
+            'text-sm px-3 py-2 rounded-md border',
+            equipeSelecionada
+              ? 'bg-blue-50 border-blue-200 text-blue-800 font-medium'
+              : 'bg-gray-50 border-gray-200 text-gray-700'
+          )}>
+            👁️ Vendas de: <span className="font-semibold">{equipeSelecionada ? equipeSelecionada.nome : 'Todas as equipes'}</span>
+          </div>
           {/* Filtros */}
           <div className="space-y-3">
             <div>
