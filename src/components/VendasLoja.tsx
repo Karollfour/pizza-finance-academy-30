@@ -235,7 +235,9 @@ const VendasLoja = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Adicionar Produtos</label>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {produtosFiltrados.map(produto => (
+              {produtosFiltrados.map(produto => {
+                const isFlash = produtoFlash === produto.id;
+                return (
                 <Card key={produto.id} className="cursor-pointer hover:shadow-md transition-shadow">
                   <CardContent className="p-3">
                     {produto.imagem && (
@@ -249,12 +251,26 @@ const VendasLoja = () => {
                     </div>
                     <p className="text-xs text-gray-600">{produto.unidade}</p>
                     <p className="text-sm font-semibold text-green-600">$ {produto.valor_unitario.toFixed(2)}</p>
-                    <Button size="sm" className="w-full mt-2" onClick={() => adicionarAoCarrinho(produto.id)}>
-                      <Plus className="w-3 h-3 mr-1" /> Adicionar
-                    </Button>
+                    <div className="relative mt-2">
+                      <Button
+                        size="sm"
+                        className={cn(
+                          'w-full transition-all duration-200',
+                          isFlash && 'bg-green-500 hover:bg-green-500 scale-110'
+                        )}
+                        onClick={() => handleAdicionarComFeedback(produto.id)}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> {isFlash ? 'Adicionado!' : 'Adicionar'}
+                      </Button>
+                      {isFlash && (
+                        <span className="pointer-events-none absolute -top-3 right-1 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow animate-bounce">
+                          +1
+                        </span>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
-              ))}
+              );})}
             </div>
           </div>
 
