@@ -661,7 +661,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroPizzas" className="text-lg font-semibold">Pizzas por Rodada</Label>
-                <Input id="numeroPizzas" type="number" value={numeroPizzas} onChange={e => setNumeroPizzas(Number(e.target.value))} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min="1" max="50" disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroPizzas" value={numeroPizzas} onCommit={setNumeroPizzas} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={1} max={50} disabled={configuracoesBloqueadas} />
                 <div className="text-sm text-gray-600 mt-1">
                   Máximo que cada equipe pode produzir
                 </div>
