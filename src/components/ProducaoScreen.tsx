@@ -28,6 +28,7 @@ import VisualizadorSaboresRodada from './VisualizadorSaboresRodada';
 import HistoricoTodasRodadas from './HistoricoTodasRodadas';
 import HistoricoSaboresAutomatico from './HistoricoSaboresAutomatico';
 import DashboardLojinha from './DashboardLojinha';
+import CommittedNumberInput from './CommittedNumberInput';
 import ComprasPorEquipe from './ComprasPorEquipe';
 import GestaoEquipes from './GestaoEquipes';
 import GerenciadorItens from './GerenciadorItens';
