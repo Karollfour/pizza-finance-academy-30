@@ -39,6 +39,7 @@ const VendasLoja = () => {
   const [descricaoVenda, setDescricaoVenda] = useState('');
   const [filtroRodadas, setFiltroRodadas] = useState<string[]>([]);
   const [filtroProdutos, setFiltroProdutos] = useState<string[]>([]);
+  const [produtoFlash, setProdutoFlash] = useState<string | null>(null);
 
   const gastoNaRodadaAtual = (eqId: string) =>
     compras
