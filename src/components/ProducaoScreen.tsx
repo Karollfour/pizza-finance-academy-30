@@ -669,7 +669,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroRodadas" className="text-lg font-semibold">Total de Rodadas</Label>
-                <Input id="numeroRodadas" type="number" value={numeroRodasUsuario} onChange={e => setNumeroRodasUsuario(Number(e.target.value))} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min="0" max="20" disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroRodadas" value={numeroRodasUsuario} onCommit={setNumeroRodasUsuario} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={0} max={20} disabled={configuracoesBloqueadas} />
                 <div className="text-sm text-gray-600 mt-1">
                   {numeroRodasUsuario === 0 ? 'Ilimitado' : `Total do jogo: ${numeroRodasUsuario} rodadas`}
                 </div>
