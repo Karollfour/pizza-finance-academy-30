@@ -653,7 +653,7 @@ const ProducaoScreen = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
               <div>
                 <Label htmlFor="tempoLimite" className="text-lg font-semibold">Tempo por Rodada (segundos)</Label>
-                <Input id="tempoLimite" type="number" value={tempoLimite} onChange={e => setTempoLimite(Number(e.target.value))} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min="60" max="1800" disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="tempoLimite" value={tempoLimite} onCommit={setTempoLimite} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={60} max={1800} disabled={configuracoesBloqueadas} />
                 <div className="text-sm text-gray-600 mt-1">
                   Recomendado: 300s (5 minutos)
                 </div>
