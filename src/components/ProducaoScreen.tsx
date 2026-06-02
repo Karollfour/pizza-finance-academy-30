@@ -931,7 +931,7 @@ const ProducaoScreen = () => {
               const numero = saboresPassados.length - index;
               return <div
                         key={sabor.id ?? index}
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white cursor-pointer"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-black cursor-pointer border border-black/20"
                         style={{ backgroundColor: cor }}
                         title={`#${numero} - ${saborNome}`}
                       >
