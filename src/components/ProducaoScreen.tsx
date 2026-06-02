@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pause, Square, Play, ChevronLeft, ChevronRight, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Pause, Square, Play, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useOptimizedRodadas } from '@/hooks/useOptimizedRodadas';
 import { useRodadaCounter } from '@/hooks/useRodadaCounter';
 import { useSynchronizedTimer } from '@/hooks/useSynchronizedTimer';
@@ -183,16 +183,6 @@ const ProducaoScreen = () => {
     },
     warningThreshold: 30
   });
-  const nextSlide = () => {
-    if (historico.length > 0) {
-      setCarouselIndex(prev => (prev + 1) % historico.length);
-    }
-  };
-  const prevSlide = () => {
-    if (historico.length > 0) {
-      setCarouselIndex(prev => (prev - 1 + historico.length) % historico.length);
-    }
-  };
 
   // Calcular estatísticas em tempo real
   useEffect(() => {
@@ -650,10 +640,16 @@ const ProducaoScreen = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
+            
+            {(rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-800 text-center font-medium">
+                🔒 Configurações bloqueadas durante a rodada
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
               <div>
                 <Label htmlFor="tempoLimite" className="text-lg font-semibold">Tempo por Rodada (segundos)</Label>
-                <CommittedNumberInput id="tempoLimite" value={tempoLimite} onCommit={setTempoLimite} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={60} max={1800} disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="tempoLimite" value={tempoLimite} onCommit={setTempoLimite} className={`text-lg p-3 ${(configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={60} max={1800} disabled={configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada'} />
                 <div className="text-sm text-gray-600 mt-1">
                   Recomendado: 300s (5 minutos)
                 </div>
@@ -661,7 +657,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroPizzas" className="text-lg font-semibold">Pizzas por Rodada</Label>
-                <CommittedNumberInput id="numeroPizzas" value={numeroPizzas} onCommit={setNumeroPizzas} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={1} max={50} disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroPizzas" value={numeroPizzas} onCommit={setNumeroPizzas} className={`text-lg p-3 ${(configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={1} max={50} disabled={configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada'} />
                 <div className="text-sm text-gray-600 mt-1">
                   Máximo que cada equipe pode produzir
                 </div>
@@ -669,7 +665,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroRodadas" className="text-lg font-semibold">Total de Rodadas</Label>
-                <CommittedNumberInput id="numeroRodadas" value={numeroRodasUsuario} onCommit={setNumeroRodasUsuario} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={0} max={20} disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroRodadas" value={numeroRodasUsuario} onCommit={setNumeroRodasUsuario} className={`text-lg p-3 ${(configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={0} max={20} disabled={configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada'} />
                 <div className="text-sm text-gray-600 mt-1">
                   {numeroRodasUsuario === 0 ? 'Ilimitado' : `Total do jogo: ${numeroRodasUsuario} rodadas`}
                 </div>
@@ -766,24 +762,30 @@ const ProducaoScreen = () => {
           </CardContent>
         </Card>}
 
+      {/* Tela de Encerramento de Rodada */}
+      {rodadaAtual && rodadaAtual.status === 'finalizada' && !(limiteExcedido && limiteRodadas > 0) && (
+        <Card className="shadow-lg border-2 border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100">
+          <CardContent className="p-8 text-center">
+            <div className="text-5xl mb-3">🏁</div>
+            <div className="text-2xl font-bold text-gray-800 mb-2">
+              Rodada {rodadaAtual.numero} finalizada!
+            </div>
+            <div className="text-gray-600">
+              Aguarde a próxima rodada ser iniciada.
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
       {/* Carrossel de Sabores - MODIFICADO: mostrar sempre que há rodada ativa ou aguardando e historico existe */}
       {historico.length > 0 && rodadaAtual && (rodadaAtual.status === 'ativa' || rodadaAtual.status === 'aguardando' || rodadaAtual.status === 'pausada') && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-xl font-bold text-orange-600">🍕 Carrossel de Sabores</span>
-              <div className="flex items-center gap-2">
-                <Button onClick={prevSlide} disabled={historico.length <= 1} variant="outline" size="sm">
-                  <ChevronLeft className="w-4 h-4" />
-                  Anterior
-                </Button>
-                <span className="text-sm text-gray-600 mx-2">
-                  {carouselIndex + 1} de {historico.length}
-                </span>
-                <Button onClick={nextSlide} disabled={historico.length <= 1} variant="outline" size="sm">
-                  Próximo
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
+              <span className="text-sm text-gray-600 mx-2">
+                {carouselIndex + 1} de {historico.length}
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -945,7 +947,7 @@ const ProducaoScreen = () => {
               const numero = saboresPassados.length - index;
               return <div
                         key={sabor.id ?? index}
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white cursor-pointer"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-black cursor-pointer border border-black/20"
                         style={{ backgroundColor: cor }}
                         title={`#${numero} - ${saborNome}`}
                       >
