@@ -640,10 +640,16 @@ const ProducaoScreen = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
+            {(() => { return null; })()}
+            {(rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-800 text-center font-medium">
+                🔒 Configurações bloqueadas durante a rodada
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
               <div>
                 <Label htmlFor="tempoLimite" className="text-lg font-semibold">Tempo por Rodada (segundos)</Label>
-                <CommittedNumberInput id="tempoLimite" value={tempoLimite} onCommit={setTempoLimite} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={60} max={1800} disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="tempoLimite" value={tempoLimite} onCommit={setTempoLimite} className={`text-lg p-3 ${(configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={60} max={1800} disabled={configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada'} />
                 <div className="text-sm text-gray-600 mt-1">
                   Recomendado: 300s (5 minutos)
                 </div>
@@ -651,7 +657,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroPizzas" className="text-lg font-semibold">Pizzas por Rodada</Label>
-                <CommittedNumberInput id="numeroPizzas" value={numeroPizzas} onCommit={setNumeroPizzas} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={1} max={50} disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroPizzas" value={numeroPizzas} onCommit={setNumeroPizzas} className={`text-lg p-3 ${(configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={1} max={50} disabled={configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada'} />
                 <div className="text-sm text-gray-600 mt-1">
                   Máximo que cada equipe pode produzir
                 </div>
@@ -659,7 +665,7 @@ const ProducaoScreen = () => {
 
               <div>
                 <Label htmlFor="numeroRodadas" className="text-lg font-semibold">Total de Rodadas</Label>
-                <CommittedNumberInput id="numeroRodadas" value={numeroRodasUsuario} onCommit={setNumeroRodasUsuario} className={`text-lg p-3 ${configuracoesBloqueadas ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={0} max={20} disabled={configuracoesBloqueadas} />
+                <CommittedNumberInput id="numeroRodadas" value={numeroRodasUsuario} onCommit={setNumeroRodasUsuario} className={`text-lg p-3 ${(configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') ? 'bg-gray-100 cursor-not-allowed' : ''}`} min={0} max={20} disabled={configuracoesBloqueadas || rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada'} />
                 <div className="text-sm text-gray-600 mt-1">
                   {numeroRodasUsuario === 0 ? 'Ilimitado' : `Total do jogo: ${numeroRodasUsuario} rodadas`}
                 </div>
