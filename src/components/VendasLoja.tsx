@@ -370,15 +370,35 @@ const VendasLoja = () => {
             </div>
           )}
 
-          <div className="flex space-x-2">
-            <Button
-              onClick={finalizarVenda}
-              className="flex-1"
-              disabled={!equipeId || saldoInsuficiente}
-            >
-              Finalizar Venda
-            </Button>
-            <Button onClick={limparCarrinho} variant="outline">Limpar Carrinho</Button>
+          <div className="flex flex-col gap-2">
+            <div className="flex space-x-2">
+              <Button
+                onClick={finalizarVenda}
+                className={cn(
+                  'flex-1 transition-all duration-200',
+                  statusVenda === 'processando' && 'bg-blue-700 hover:bg-blue-700',
+                  statusVenda === 'sucesso' && 'bg-green-600 hover:bg-green-600',
+                  statusVenda === 'erro' && 'bg-red-600 hover:bg-red-600'
+                )}
+                disabled={!equipeId || saldoInsuficiente || statusVenda === 'processando' || statusVenda === 'sucesso'}
+              >
+                {statusVenda === 'processando' && (
+                  <>
+                    <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Processando...
+                  </>
+                )}
+                {statusVenda === 'sucesso' && <>✅ Compra realizada!</>}
+                {statusVenda === 'erro' && <>❌ Erro — tentar novamente</>}
+                {statusVenda === 'idle' && <>Finalizar Venda</>}
+              </Button>
+              <Button onClick={limparCarrinho} variant="outline" disabled={statusVenda === 'processando'}>Limpar Carrinho</Button>
+            </div>
+            {statusVenda === 'erro' && erroVenda && (
+              <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">
+                {erroVenda}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
