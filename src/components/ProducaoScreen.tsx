@@ -183,16 +183,6 @@ const ProducaoScreen = () => {
     },
     warningThreshold: 30
   });
-  const nextSlide = () => {
-    if (historico.length > 0) {
-      setCarouselIndex(prev => (prev + 1) % historico.length);
-    }
-  };
-  const prevSlide = () => {
-    if (historico.length > 0) {
-      setCarouselIndex(prev => (prev - 1 + historico.length) % historico.length);
-    }
-  };
 
   // Calcular estatísticas em tempo real
   useEffect(() => {
