@@ -762,6 +762,22 @@ const ProducaoScreen = () => {
           </CardContent>
         </Card>}
 
+      {/* Tela de Encerramento de Rodada */}
+      {rodadaAtual && rodadaAtual.status === 'finalizada' && !(limiteExcedido && limiteRodadas > 0) && (
+        <Card className="shadow-lg border-2 border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100">
+          <CardContent className="p-8 text-center">
+            <div className="text-5xl mb-3">🏁</div>
+            <div className="text-2xl font-bold text-gray-800 mb-2">
+              Rodada {rodadaAtual.numero} finalizada!
+            </div>
+            <div className="text-gray-600">
+              Aguarde a próxima rodada ser iniciada.
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
       {/* Carrossel de Sabores - MODIFICADO: mostrar sempre que há rodada ativa ou aguardando e historico existe */}
       {historico.length > 0 && rodadaAtual && (rodadaAtual.status === 'ativa' || rodadaAtual.status === 'aguardando' || rodadaAtual.status === 'pausada') && !(limiteExcedido && limiteRodadas > 0) && <Card className="shadow-lg border-2 border-orange-200">
           <CardHeader>
