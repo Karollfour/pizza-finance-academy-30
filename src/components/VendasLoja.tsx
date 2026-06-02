@@ -94,6 +94,8 @@ const VendasLoja = () => {
     if (saldoInsuficiente)
       return toast.error(`Saldo insuficiente! Disponível: $ ${saldoDisponivel.toFixed(2)} / Total: $ ${totalCarrinho.toFixed(2)}`);
 
+    setStatusVenda('processando');
+    setErroVenda('');
     try {
       for (const item of carrinho) {
         await registrarCompra(
@@ -106,10 +108,17 @@ const VendasLoja = () => {
       if (cobrancaViagem) {
         await registrarCompra(equipeId, null, rodadaAtual?.id || null, 1, 5, 'viagem', descricaoVenda || 'Taxa de viagem à loja');
       }
-      limparCarrinho();
+      setStatusVenda('sucesso');
       toast.success('Venda finalizada com sucesso!');
-    } catch {
+      window.setTimeout(() => {
+        limparCarrinho();
+        setStatusVenda('idle');
+      }, 1500);
+    } catch (e: any) {
+      setStatusVenda('erro');
+      setErroVenda(e?.message || 'Erro ao finalizar venda');
       toast.error('Erro ao finalizar venda');
+      window.setTimeout(() => setStatusVenda('idle'), 2500);
     }
   };
 
