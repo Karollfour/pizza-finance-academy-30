@@ -761,19 +761,9 @@ const ProducaoScreen = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-xl font-bold text-orange-600">🍕 Carrossel de Sabores</span>
-              <div className="flex items-center gap-2">
-                <Button onClick={prevSlide} disabled={historico.length <= 1} variant="outline" size="sm">
-                  <ChevronLeft className="w-4 h-4" />
-                  Anterior
-                </Button>
-                <span className="text-sm text-gray-600 mx-2">
-                  {carouselIndex + 1} de {historico.length}
-                </span>
-                <Button onClick={nextSlide} disabled={historico.length <= 1} variant="outline" size="sm">
-                  Próximo
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
+              <span className="text-sm text-gray-600 mx-2">
+                {carouselIndex + 1} de {historico.length}
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
