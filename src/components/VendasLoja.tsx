@@ -40,6 +40,8 @@ const VendasLoja = () => {
   const [filtroRodadas, setFiltroRodadas] = useState<string[]>([]);
   const [filtroProdutos, setFiltroProdutos] = useState<string[]>([]);
   const [produtoFlash, setProdutoFlash] = useState<string | null>(null);
+  const [statusVenda, setStatusVenda] = useState<'idle' | 'processando' | 'sucesso' | 'erro'>('idle');
+  const [erroVenda, setErroVenda] = useState<string>('');
 
   const gastoNaRodadaAtual = (eqId: string) =>
     compras
