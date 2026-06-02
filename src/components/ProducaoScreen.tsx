@@ -640,7 +640,7 @@ const ProducaoScreen = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {(() => { return null; })()}
+            
             {(rodadaAtual?.status === 'ativa' || rodadaAtual?.status === 'pausada') && (
               <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-800 text-center font-medium">
                 🔒 Configurações bloqueadas durante a rodada
