@@ -210,24 +210,12 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      if (data.pizzasEnviadas === 0) {
-        return (
-          <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
-            <p className="font-semibold">{data.equipeNome}</p>
-            <p className="text-red-600">Nenhuma pizza enviada</p>
-          </div>
-        );
-      }
       return (
         <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
-          <p className="font-semibold">{data.equipeNome}</p>
-          <p className="text-blue-600">{`Meta Takt Time: ${data.taktTimeMedio}s`}</p>
-          <p className="text-orange-600">{`Meta da Rodada: ${data.tempoMedioRodada.toFixed(1)}s`}</p>
-          <p className="text-purple-600">{`Pizzas Enviadas: ${data.pizzasEnviadas}`}</p>
-          <p className={`font-medium ${data.dentroDoTempo ? 'text-green-600' : 'text-red-600'}`}>
-            {data.dentroDoTempo ? '✓ Dentro do tempo médio' : '✗ Acima do tempo médio'}
-          </p>
-          <p className="text-gray-600">{`Desempenho: ${data.desempenho}`}</p>
+          <p className="font-semibold mb-1">{data.equipeNome}</p>
+          <p className="text-blue-600">{`Takt Time: ${data.taktTimeMedio}s`}</p>
+          <p className="text-green-600">{`Meta do Takt Time: ${data.tempoMedioRodada.toFixed(1)}s`}</p>
+          <p className="text-purple-600">{`Pizzas enviadas: ${data.pizzasEnviadas}`}</p>
         </div>
       );
     }
