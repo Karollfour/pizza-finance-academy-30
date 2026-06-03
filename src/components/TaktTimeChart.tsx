@@ -263,7 +263,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                 />
                 <YAxis 
                   label={{
-                    value: 'Meta Takt Time (segundos)',
+                    value: 'Takt Time (segundos)',
                     angle: -90,
                     position: 'insideLeft'
                   }} 
@@ -277,7 +277,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                   strokeWidth={2} 
                   strokeDasharray="4 4" 
                   label={{
-                    value: `Meta da Rodada: ${dadosTaktTimePorEquipe.tempoMedioRodada.toFixed(1)}s`,
+                    value: `Meta do Takt Time: ${dadosTaktTimePorEquipe.tempoMedioRodada.toFixed(1)}s`,
                     position: 'top',
                     fontSize: 12
                   }} 
@@ -285,7 +285,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                 
                 <Bar 
                   dataKey="taktTimeMedio" 
-                  name="Meta Takt Time" 
+                  name="Takt Time" 
                   shape={(props: any) => {
                     const { fill, ...rest } = props;
                     return <rect {...rest} fill={obterCorBarra(props.payload)} />;
