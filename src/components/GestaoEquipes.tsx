@@ -245,51 +245,57 @@ const GestaoEquipes = () => {
                     {editandoEquipe === equipe.id && (
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="number"
-                              placeholder="Novo saldo inicial"
-                              defaultValue={equipe.saldo_inicial}
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                  const input = e.target as HTMLInputElement;
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium text-gray-700">Saldo inicial ($)</label>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="number"
+                                placeholder="Novo saldo inicial"
+                                defaultValue={equipe.saldo_inicial}
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const input = e.target as HTMLInputElement;
+                                    handleAtualizarSaldo(equipe.id, Number(input.value));
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  const input = e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement;
                                   handleAtualizarSaldo(equipe.id, Number(input.value));
-                                }
-                              }}
-                            />
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                const input = e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement;
-                                handleAtualizarSaldo(equipe.id, Number(input.value));
-                              }}
-                            >
-                              Atualizar Saldo
-                            </Button>
+                                }}
+                              >
+                                Atualizar Saldo
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="number"
-                              placeholder="Quantidade de pessoas"
-                              defaultValue={equipe.quantidade_pessoas || 1}
-                              min="1"
-                              max="10"
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                  const input = e.target as HTMLInputElement;
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium text-gray-700">Quantidade de pessoas</label>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="number"
+                                placeholder="Quantidade de pessoas"
+                                defaultValue={equipe.quantidade_pessoas || 1}
+                                min="1"
+                                max="10"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const input = e.target as HTMLInputElement;
+                                    handleAtualizarQuantidadePessoas(equipe.id, Number(input.value));
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  const input = e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement;
                                   handleAtualizarQuantidadePessoas(equipe.id, Number(input.value));
-                                }
-                              }}
-                            />
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                const input = e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement;
-                                handleAtualizarQuantidadePessoas(equipe.id, Number(input.value));
-                              }}
-                            >
-                              Atualizar Pessoas
-                            </Button>
+                                }}
+                              >
+                                Atualizar Pessoas
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
