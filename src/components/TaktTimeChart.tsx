@@ -234,7 +234,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>📊 Meta Takt Time por Equipe</span>
+          <span>📊 Takt Time por Equipe</span>
           <div className="text-sm text-gray-600">
             {rodadaAtual ? `Analisando Rodada ${rodadaAtual.numero}` : 'Nenhuma rodada selecionada'}
           </div>
