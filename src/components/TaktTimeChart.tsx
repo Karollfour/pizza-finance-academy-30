@@ -337,10 +337,6 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                         <span className="font-medium">{equipe.pizzasEnviadas}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Pizzas enviadas:</span>
-                        <span className="font-medium">{equipe.pizzasEnviadas}</span>
-                      </div>
-                      <div className="flex justify-between">
                         <span>Status:</span>
                         <span className={`font-medium ${equipe.dentroDoTempo && equipe.pizzasEnviadas > 0 ? 'text-green-600' : equipe.pizzasEnviadas > 0 ? 'text-red-600' : 'text-gray-500'}`}>
                           {equipe.pizzasEnviadas > 0 ? equipe.dentroDoTempo ? 'No tempo' : 'Atrasado' : 'Sem dados'}
