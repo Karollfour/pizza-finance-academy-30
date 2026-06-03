@@ -125,30 +125,42 @@ const GestaoEquipes = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Input
-              placeholder="Nome da equipe"
-              value={novaEquipe.nome}
-              onChange={(e) => setNovaEquipe(prev => ({ ...prev, nome: e.target.value }))}
-            />
-            <Input
-              placeholder="Professor responsável"
-              value={novaEquipe.professorResponsavel}
-              onChange={(e) => setNovaEquipe(prev => ({ ...prev, professorResponsavel: e.target.value }))}
-            />
-            <Input
-              type="number"
-              placeholder="Saldo inicial"
-              value={novaEquipe.saldoInicial}
-              onChange={(e) => setNovaEquipe(prev => ({ ...prev, saldoInicial: Number(e.target.value) }))}
-            />
-            <Input
-              type="number"
-              placeholder="Quantidade de pessoas"
-              value={novaEquipe.quantidadePessoas}
-              min="1"
-              max="10"
-              onChange={(e) => setNovaEquipe(prev => ({ ...prev, quantidadePessoas: Number(e.target.value) }))}
-            />
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">Nome da equipe</label>
+              <Input
+                placeholder="Ex.: Equipe A"
+                value={novaEquipe.nome}
+                onChange={(e) => setNovaEquipe(prev => ({ ...prev, nome: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">Professor responsável</label>
+              <Input
+                placeholder="Nome do professor"
+                value={novaEquipe.professorResponsavel}
+                onChange={(e) => setNovaEquipe(prev => ({ ...prev, professorResponsavel: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">Saldo inicial ($)</label>
+              <Input
+                type="number"
+                placeholder="100"
+                value={novaEquipe.saldoInicial}
+                onChange={(e) => setNovaEquipe(prev => ({ ...prev, saldoInicial: Number(e.target.value) }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">Quantidade de pessoas</label>
+              <Input
+                type="number"
+                placeholder="1"
+                value={novaEquipe.quantidadePessoas}
+                min="1"
+                max="10"
+                onChange={(e) => setNovaEquipe(prev => ({ ...prev, quantidadePessoas: Number(e.target.value) }))}
+              />
+            </div>
           </div>
           <Button onClick={handleCriarEquipe} className="w-full">
             Criar Equipe
