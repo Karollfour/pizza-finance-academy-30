@@ -210,24 +210,12 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      if (data.pizzasEnviadas === 0) {
-        return (
-          <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
-            <p className="font-semibold">{data.equipeNome}</p>
-            <p className="text-red-600">Nenhuma pizza enviada</p>
-          </div>
-        );
-      }
       return (
         <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
-          <p className="font-semibold">{data.equipeNome}</p>
-          <p className="text-blue-600">{`Meta Takt Time: ${data.taktTimeMedio}s`}</p>
-          <p className="text-orange-600">{`Meta da Rodada: ${data.tempoMedioRodada.toFixed(1)}s`}</p>
-          <p className="text-purple-600">{`Pizzas Enviadas: ${data.pizzasEnviadas}`}</p>
-          <p className={`font-medium ${data.dentroDoTempo ? 'text-green-600' : 'text-red-600'}`}>
-            {data.dentroDoTempo ? '✓ Dentro do tempo médio' : '✗ Acima do tempo médio'}
-          </p>
-          <p className="text-gray-600">{`Desempenho: ${data.desempenho}`}</p>
+          <p className="font-semibold mb-1">{data.equipeNome}</p>
+          <p className="text-blue-600">{`Takt Time: ${data.taktTimeMedio}s`}</p>
+          <p className="text-green-600">{`Meta do Takt Time: ${data.tempoMedioRodada.toFixed(1)}s`}</p>
+          <p className="text-purple-600">{`Pizzas enviadas: ${data.pizzasEnviadas}`}</p>
         </div>
       );
     }
@@ -246,7 +234,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>📊 Meta Takt Time por Equipe</span>
+          <span>📊 Takt Time por Equipe</span>
           <div className="text-sm text-gray-600">
             {rodadaAtual ? `Analisando Rodada ${rodadaAtual.numero}` : 'Nenhuma rodada selecionada'}
           </div>
@@ -275,7 +263,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                 />
                 <YAxis 
                   label={{
-                    value: 'Meta Takt Time (segundos)',
+                    value: 'Takt Time (segundos)',
                     angle: -90,
                     position: 'insideLeft'
                   }} 
@@ -289,7 +277,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                   strokeWidth={2} 
                   strokeDasharray="4 4" 
                   label={{
-                    value: `Meta da Rodada: ${dadosTaktTimePorEquipe.tempoMedioRodada.toFixed(1)}s`,
+                    value: `Meta do Takt Time: ${dadosTaktTimePorEquipe.tempoMedioRodada.toFixed(1)}s`,
                     position: 'top',
                     fontSize: 12
                   }} 
@@ -297,7 +285,7 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                 
                 <Bar 
                   dataKey="taktTimeMedio" 
-                  name="Meta Takt Time" 
+                  name="Takt Time" 
                   shape={(props: any) => {
                     const { fill, ...rest } = props;
                     return <rect {...rest} fill={obterCorBarra(props.payload)} />;
@@ -344,10 +332,6 @@ const TaktTimeChart = ({ rodadaSelecionada }: TaktTimeChartProps) => {
                       <span className="text-xs bg-gray-100 px-2 py-1 rounded">#{index + 1}</span>
                     </div>
                     <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span>Takt Time médio:</span>
-                        <span className="font-medium">{equipe.pizzasEnviadas > 0 ? `${equipe.taktTimeMedio}s` : 'N/A'}</span>
-                      </div>
                       <div className="flex justify-between">
                         <span>Pizzas enviadas:</span>
                         <span className="font-medium">{equipe.pizzasEnviadas}</span>

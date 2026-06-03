@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useCompras } from '@/hooks/useCompras';
 import { useEquipes } from '@/hooks/useEquipes';
 import { useProdutos } from '@/hooks/useProdutos';
@@ -14,7 +14,14 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronsUpDown, X } from 'lucide-react';
 import TaktTimeChart from './TaktTimeChart';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+// Cores das categorias de gastos
+const COR_MP = '#ef4444';   // vermelho
+const COR_EQ = '#f59e0b';   // amarelo/laranja
+const COR_V  = '#3B82F6';   // azul (Viagem)
+const COR_MO = '#10b981';   // verde (Mão de Obra)
+
+// Custo de mão de obra por pessoa por rodada (valor padrão)
+const MAO_DE_OBRA_POR_PESSOA_RODADA = 10;
 
 const DashboardLojinha = () => {
   const { compras } = useCompras();
@@ -33,7 +40,6 @@ const DashboardLojinha = () => {
       .sort((a, b) => a - b);
   }, [rodadas, pizzas, compras]);
 
-  // rodadas-alvo: se nenhuma selecionada → todas; caso contrário, somente selecionadas
   const rodadasAlvo = useMemo(() => {
     if (rodadasSelecionadas.length === 0) return rodadas;
     return rodadas.filter(r => rodadasSelecionadas.includes(r.numero));
@@ -61,8 +67,9 @@ const DashboardLojinha = () => {
     const p = produtos.find(pr => pr.id === produtoId);
     return (p as any)?.tipo === 'EQ';
   };
+  const isViagem = (compra: any) => compra.tipo === 'taxa_entrega' || compra.tipo === 'viagem';
 
-  // Pizzas por equipe nas rodadas-alvo
+  // Pizzas por equipe nas rodadas-alvo (empilhado)
   const dadosPizzasFiltradas = equipes.map(equipe => {
     const pizzasEquipe = pizzas.filter(p => p.equipe_id === equipe.id && rodadaIds.has(p.rodada_id) && p.status === 'avaliada');
     const aprovadas = pizzasEquipe.filter(p => p.resultado === 'aprovada').length;
@@ -72,59 +79,58 @@ const DashboardLojinha = () => {
       aprovadas,
       reprovadas,
       total: aprovadas + reprovadas,
-      corEquipe: equipe.cor_tema || '#3b82f6',
     };
   }).filter(d => d.total > 0);
 
-  // Produtividade
+  // Produtividade: pizzas APROVADAS / quantidade_pessoas (guard /0)
   const dadosProdutividade = equipes.map(equipe => {
-    const pizzasEquipe = pizzas.filter(p => p.equipe_id === equipe.id && rodadaIds.has(p.rodada_id) && p.status === 'avaliada');
-    const total = pizzasEquipe.length;
-    const qtd = equipe.quantidade_pessoas || 1;
+    const aprovadasEquipe = pizzas.filter(
+      p => p.equipe_id === equipe.id && rodadaIds.has(p.rodada_id) && p.resultado === 'aprovada'
+    ).length;
+    const qtd = Number(equipe.quantidade_pessoas) || 0;
+    const pizzasPorPessoa = qtd > 0 ? Number((aprovadasEquipe / qtd).toFixed(2)) : 0;
     return {
       equipe: equipe.nome,
-      pizzasPorPessoa: Number((total / qtd).toFixed(2)),
-      totalPizzas: total,
+      pizzasPorPessoa,
+      pizzasAprovadas: aprovadasEquipe,
       quantidadePessoas: qtd,
-      corEquipe: equipe.cor_tema || '#3b82f6',
     };
-  }).filter(d => d.totalPizzas > 0);
+  });
 
-  // Análise de lucro (usa rodadasAlvo, agrupa MP/EQ via coluna tipo)
+  // Análise de Lucro por Pizza (empilhado por equipe: MP + EQ + V + MO)
   const dadosAnaliseLucro = equipes.map(equipe => {
     const comprasEquipe = compras.filter(c => c.equipe_id === equipe.id && c.rodada_id && rodadaIds.has(c.rodada_id));
-    const mp = comprasEquipe.filter(c => isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
-    const eq = comprasEquipe.filter(c => isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
-    const mo = (equipe.quantidade_pessoas || 1) * 10 * Math.max(rodadasAlvo.length, 1);
+    const mp = comprasEquipe.filter(c => !isViagem(c) && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const eq = comprasEquipe.filter(c => !isViagem(c) && isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const v  = comprasEquipe.filter(c => isViagem(c)).reduce((s, c) => s + c.valor_total, 0);
+    const mo = (Number(equipe.quantidade_pessoas) || 0) * MAO_DE_OBRA_POR_PESSOA_RODADA * Math.max(rodadasAlvo.length, 1);
     const pizzasAprovadas = pizzas.filter(p => p.equipe_id === equipe.id && rodadaIds.has(p.rodada_id) && p.resultado === 'aprovada').length;
-    const custoTotal = mp + eq + mo;
+    const custoTotal = mp + eq + v + mo;
     const lucro = pizzasAprovadas > 0 ? custoTotal / pizzasAprovadas : 0;
     return {
       equipe: equipe.nome,
-      mp, eq, mo, custoTotal, pizzasAprovadas,
+      mp, eq, v, mo, custoTotal, pizzasAprovadas,
       lucro: Number(lucro.toFixed(2)),
       corEquipe: equipe.cor_tema || '#3b82f6',
     };
   }).filter(d => d.pizzasAprovadas > 0);
 
+  // Gastos por equipe — TODAS as equipes (left join), mesmo $0
   const dadosGastos = equipes.map(equipe => {
     const comprasEquipe = compras.filter(c => c.equipe_id === equipe.id && c.rodada_id && rodadaIds.has(c.rodada_id));
     return {
       nome: equipe.nome,
       gasto: comprasEquipe.reduce((s, c) => s + c.valor_total, 0),
-      viagens: comprasEquipe.filter(c => c.tipo === 'viagem').length,
-      corEquipe: equipe.cor_tema || '#3b82f6',
     };
-  }).filter(d => d.gasto > 0);
+  });
 
   const dadosGanhos = equipes.map(equipe => {
     const aprovadas = pizzas.filter(p => p.equipe_id === equipe.id && rodadaIds.has(p.rodada_id) && p.resultado === 'aprovada');
     return {
       nome: equipe.nome,
       ganho: aprovadas.length * 10,
-      corEquipe: equipe.cor_tema || '#3b82f6',
     };
-  }).filter(d => d.ganho > 0);
+  });
 
   const produtosMaisComprados = produtos.map(produto => {
     const comprasProd = compras.filter(c => c.produto_id === produto.id && c.rodada_id && rodadaIds.has(c.rodada_id));
@@ -134,17 +140,21 @@ const DashboardLojinha = () => {
     };
   }).filter(p => p.quantidade > 0).sort((a, b) => b.quantidade - a.quantidade);
 
-  // Distribuição de gastos: MP vs EQ vs Viagens (usa tipo)
+  // Distribuição de Gastos — empilhado por equipe (MP + EQ + V + Mão de Obra)
+  const dadosDistribuicaoGastos = equipes.map(equipe => {
+    const comprasEquipe = compras.filter(c => c.equipe_id === equipe.id && c.rodada_id && rodadaIds.has(c.rodada_id));
+    const mp = comprasEquipe.filter(c => !isViagem(c) && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const eq = comprasEquipe.filter(c => !isViagem(c) && isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const v  = comprasEquipe.filter(c => isViagem(c)).reduce((s, c) => s + c.valor_total, 0);
+    const mo = (Number(equipe.quantidade_pessoas) || 0) * MAO_DE_OBRA_POR_PESSOA_RODADA * Math.max(rodadasAlvo.length, 1);
+    return { equipe: equipe.nome, mp, eq, v, mo };
+  });
+
   const comprasFiltradas = compras.filter(c => c.rodada_id && rodadaIds.has(c.rodada_id));
-  const gastosCategoria = [
-    { name: 'Matéria-prima (MP)', value: comprasFiltradas.filter(c => c.tipo === 'material' && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0) },
-    { name: 'Equipamentos (EQ)', value: comprasFiltradas.filter(c => c.tipo === 'material' && isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0) },
-    { name: 'Viagens', value: comprasFiltradas.filter(c => c.tipo === 'viagem').reduce((s, c) => s + c.valor_total, 0) },
-  ].filter(g => g.value > 0);
 
   return (
     <div className="space-y-6">
-      {/* Filtro Global Unificado - MULTI-SELECT */}
+      {/* Filtro Global */}
       <Card className="shadow-lg border-2 border-blue-200">
         <CardHeader>
           <CardTitle className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
@@ -198,7 +208,7 @@ const DashboardLojinha = () => {
         </CardContent>
       </Card>
 
-      {/* Análise de Lucro por Pizza */}
+      {/* 1. Análise de Lucro por Pizza (MP + EQ + V + MO) */}
       <Card className="shadow-lg border-2 border-green-200">
         <CardHeader>
           <CardTitle>💰 Análise de Lucro por Pizza — {labelFiltro}</CardTitle>
@@ -213,13 +223,20 @@ const DashboardLojinha = () => {
                   <YAxis />
                   <Tooltip
                     formatter={(value, name) => {
-                      const labels: Record<string, string> = { mp: 'MP', eq: 'EQ', mo: 'MO' };
+                      const labels: Record<string, string> = {
+                        mp: 'MP (Matéria-Prima)',
+                        eq: 'EQ (Equipamento)',
+                        v:  'V (Viagem)',
+                        mo: 'MO (Mão de Obra)',
+                      };
                       return [`$ ${Number(value).toFixed(2)}`, labels[name as string] || name];
                     }}
                   />
-                  <Bar dataKey="mp" stackId="custo" fill="#ef4444" name="mp" />
-                  <Bar dataKey="eq" stackId="custo" fill="#f59e0b" name="eq" />
-                  <Bar dataKey="mo" stackId="custo" fill="#10b981" name="mo" />
+                  <Legend />
+                  <Bar dataKey="mp" stackId="custo" fill={COR_MP} name="MP" />
+                  <Bar dataKey="eq" stackId="custo" fill={COR_EQ} name="EQ" />
+                  <Bar dataKey="v"  stackId="custo" fill={COR_V}  name="V (Viagem)" />
+                  <Bar dataKey="mo" stackId="custo" fill={COR_MO} name="MO" />
                 </BarChart>
               </ResponsiveContainer>
 
@@ -242,6 +259,10 @@ const DashboardLojinha = () => {
                         <div className="flex justify-between bg-yellow-50 p-2 rounded">
                           <span className="text-yellow-700">EQ (Equipamento):</span>
                           <span className="font-bold">$ {dados.eq.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between bg-blue-50 p-2 rounded">
+                          <span className="text-blue-700">V (Viagem):</span>
+                          <span className="font-bold">$ {dados.v.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between bg-green-50 p-2 rounded">
                           <span className="text-green-700">MO (Mão de Obra):</span>
@@ -269,13 +290,13 @@ const DashboardLojinha = () => {
         </CardContent>
       </Card>
 
-      {/* Takt Time (recebe primeira rodada selecionada ou null = todas) */}
+      {/* 2. Takt Time por Equipe + 3. Ranking de Desempenho (dentro do TaktTimeChart) */}
       <TaktTimeChart rodadaSelecionada={rodadasSelecionadas.length === 1 ? rodadasSelecionadas[0] : null} />
 
-      {/* Produtividade */}
+      {/* 4. Produtividade de Mão de Obra */}
       <Card>
         <CardHeader>
-          <CardTitle>👷‍♂️ Produtividade de Mão de Obra (Pizzas por Pessoa)</CardTitle>
+          <CardTitle>👷‍♂️ Produtividade de Mão de Obra (Pizzas Aprovadas por Pessoa)</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
@@ -283,17 +304,28 @@ const DashboardLojinha = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="equipe" />
               <YAxis />
-              <Tooltip />
+              <Tooltip
+                formatter={(value: any, name: any, props: any) => {
+                  if (name === 'pizzasPorPessoa') {
+                    const p = props?.payload;
+                    return [
+                      `${value} (${p?.pizzasAprovadas ?? 0} aprovadas ÷ ${p?.quantidadePessoas ?? 0} pessoas)`,
+                      'Pizzas por Pessoa'
+                    ];
+                  }
+                  return [value, name];
+                }}
+              />
               <Bar dataKey="pizzasPorPessoa" fill="#8b5cf6" name="Pizzas por Pessoa" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Pizzas por Equipe */}
+      {/* 5. Análise de Pizzas (empilhado) */}
       <Card>
         <CardHeader>
-          <CardTitle>🍕 Análise de Pizzas</CardTitle>
+          <CardTitle>🍕 Análise de Pizzas (Aprovadas vs Reprovadas)</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
@@ -302,87 +334,80 @@ const DashboardLojinha = () => {
               <XAxis dataKey="equipe" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="aprovadas" fill="#22c55e" name="Aprovadas" />
-              <Bar dataKey="reprovadas" fill="#ef4444" name="Reprovadas" />
+              <Legend />
+              <Bar dataKey="aprovadas" stackId="pizzas" fill="#22c55e" name="Aprovadas" />
+              <Bar dataKey="reprovadas" stackId="pizzas" fill="#ef4444" name="Reprovadas" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
+      {/* 6 + 7. Gastos por Equipe & Vendas por Equipe */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader><CardTitle>💰 Gastos por Equipe</CardTitle></CardHeader>
           <CardContent>
-            {dadosGastos.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dadosGastos}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="nome" />
-                  <YAxis />
-                  <Tooltip formatter={(v) => [`$ ${Number(v).toFixed(2)}`, 'Gasto Total']} />
-                  <Bar dataKey="gasto" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : <div className="text-center py-8 text-gray-500">Sem dados</div>}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>🎉 Vendas por Equipe (Pizzas Aprovadas)</CardTitle></CardHeader>
-          <CardContent>
-            {dadosGanhos.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dadosGanhos}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="nome" />
-                  <YAxis />
-                  <Tooltip formatter={(v) => [`$ ${Number(v).toFixed(2)}`, 'Ganho Total']} />
-                  <Bar dataKey="ganho" fill="#22c55e" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : <div className="text-center py-8 text-gray-500">Sem dados</div>}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>🛒 Produtos Mais Comprados</CardTitle></CardHeader>
-          <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={produtosMaisComprados.slice(0, 5)}>
+              <BarChart data={dadosGastos}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="nome" />
                 <YAxis />
-                <Tooltip />
-                <Bar dataKey="quantidade" fill="#82ca9d" />
+                <Tooltip formatter={(v) => [`$ ${Number(v).toFixed(2)}`, 'Gasto Total']} />
+                <Bar dataKey="gasto" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>📊 Distribuição de Gastos (MP / EQ / Viagens)</CardTitle></CardHeader>
+          <CardHeader><CardTitle>🎉 Vendas por Equipe (Pizzas Aprovadas)</CardTitle></CardHeader>
           <CardContent>
-            {gastosCategoria.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={gastosCategoria}
-                    cx="50%" cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    dataKey="value"
-                  >
-                    {gastosCategoria.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip formatter={(v) => `$ ${Number(v).toFixed(2)}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : <div className="text-center py-8 text-gray-500">Sem dados</div>}
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={dadosGanhos}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="nome" />
+                <YAxis />
+                <Tooltip formatter={(v) => [`$ ${Number(v).toFixed(2)}`, 'Ganho Total']} />
+                <Bar dataKey="ganho" fill="#22c55e" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
+      {/* 8. Distribuição de Gastos (empilhado por equipe: MP + EQ + V + Mão de Obra) — largura total */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>📊 Distribuição de Gastos por Equipe (MP / EQ / V / Mão de Obra)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={dadosDistribuicaoGastos} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="equipe" />
+              <YAxis />
+              <Tooltip
+                formatter={(value, name) => {
+                  const labels: Record<string, string> = {
+                    mp: 'MP (Matéria-Prima)',
+                    eq: 'EQ (Equipamento)',
+                    v:  'V (Viagem)',
+                    mo: 'Mão de Obra',
+                  };
+                  return [`$ ${Number(value).toFixed(2)}`, labels[name as string] || name];
+                }}
+              />
+              <Legend />
+              <Bar dataKey="mp" stackId="dist" fill={COR_MP} name="MP" />
+              <Bar dataKey="eq" stackId="dist" fill={COR_EQ} name="EQ" />
+              <Bar dataKey="v"  stackId="dist" fill={COR_V}  name="V (Viagem)" />
+              <Bar dataKey="mo" stackId="dist" fill={COR_MO} name="Mão de Obra" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* 9. Resumo Geral */}
       <Card>
         <CardHeader><CardTitle>📈 Resumo Geral</CardTitle></CardHeader>
         <CardContent>
@@ -400,6 +425,24 @@ const DashboardLojinha = () => {
               <div className="text-sm text-green-700">Total Ganho (Pizzas)</div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* 10. Produtos Mais Comprados (depois do Resumo Geral) */}
+      <Card>
+        <CardHeader><CardTitle>🛒 Produtos Mais Comprados</CardTitle></CardHeader>
+        <CardContent>
+          {produtosMaisComprados.length > 0 ? (
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={produtosMaisComprados.slice(0, 10)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="nome" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="quantidade" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <div className="text-center py-8 text-gray-500">Sem dados</div>}
         </CardContent>
       </Card>
     </div>
