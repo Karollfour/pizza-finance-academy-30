@@ -276,17 +276,8 @@ const AvaliadorScreen = () => {
                         <span className="font-bold text-lg text-gray-800">Pedido #{getNumeroPedido(pizza)}</span> • Pizza #{pizza.id.slice(-6)} • Sabor: {getSaborPizza(pizza)} • Enviada: {new Date(pizza.created_at).toLocaleTimeString('pt-BR')}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Visualização da Pizza com Sabor */}
-                      <div className="bg-gradient-to-br from-yellow-100 to-orange-100 p-6 rounded-lg text-center">
-                        <div className="text-6xl mb-2">🍕</div>
-                        <div className="space-y-1">
-                          <p className="text-lg font-semibold text-gray-700">Pizza {getSaborPizza(pizza)}</p>
-                          <p className="text-gray-600">Produzida pela {getEquipeNome(pizza.equipe_id)}</p>
-                        </div>
-                      </div>
-
-                      {/* Comparador: Sabor solicitado x Sabor produzido */}
+                    <CardContent className="space-y-3">
+                      {/* Comparador compacto: Produzido x Pedido */}
                       {(() => {
                         const numPedido = getNumeroPedido(pizza);
                         const esperado = saboresEsperados.find(s => s.ordem === numPedido);
@@ -298,31 +289,28 @@ const AvaliadorScreen = () => {
                         return (
                           <div className={`p-3 rounded-lg border-2 ${
                             esperado
-                              ? (coincidem ? 'border-green-400 bg-green-50' : 'border-orange-400 bg-orange-50')
+                              ? (coincidem ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50')
                               : 'border-gray-200 bg-gray-50'
                           }`}>
-                            <div className="text-xs font-medium mb-2 text-gray-700">
-                              🔍 Comparador (Pedido #{numPedido})
-                            </div>
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <div className="text-[11px] text-gray-500 mb-1">Solicitado pelo carrossel</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="p-2 rounded bg-white/70">
+                                <div className="text-[11px] text-gray-500 mb-1 font-medium">Produzido</div>
                                 <div className="flex items-center gap-2">
-                                  <span className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: corEsperado }} />
-                                  <span className="font-medium">{nomeEsperado}</span>
+                                  <span className="w-3 h-3 rounded-full border border-gray-300 flex-shrink-0" style={{ backgroundColor: corProduzido }} />
+                                  <span className="font-medium truncate">{nomeProduzido}</span>
                                 </div>
                               </div>
-                              <div>
-                                <div className="text-[11px] text-gray-500 mb-1">Produzido pela equipe</div>
+                              <div className="p-2 rounded bg-white/70">
+                                <div className="text-[11px] text-gray-500 mb-1 font-medium">Pedido</div>
                                 <div className="flex items-center gap-2">
-                                  <span className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: corProduzido }} />
-                                  <span className="font-medium">{nomeProduzido}</span>
+                                  <span className="w-3 h-3 rounded-full border border-gray-300 flex-shrink-0" style={{ backgroundColor: corEsperado }} />
+                                  <span className="font-medium truncate">{nomeEsperado}</span>
                                 </div>
                               </div>
                             </div>
                             {esperado && (
-                              <div className={`mt-2 text-xs font-semibold ${coincidem ? 'text-green-700' : 'text-orange-700'}`}>
-                                {coincidem ? '✅ Sabores coincidem' : '⚠️ Sabores divergem — verifique antes de aprovar'}
+                              <div className={`mt-2 text-xs font-semibold text-center ${coincidem ? 'text-green-700' : 'text-red-700'}`}>
+                                {coincidem ? '✅ Sabores coincidem' : '⚠️ Sabores divergem'}
                               </div>
                             )}
                           </div>
