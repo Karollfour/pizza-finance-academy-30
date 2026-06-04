@@ -140,14 +140,20 @@ const DashboardLojinha = () => {
     };
   }).filter(p => p.quantidade > 0).sort((a, b) => b.quantidade - a.quantidade);
 
-  // Distribuição de Gastos — empilhado por equipe (MP + EQ + V + Mão de Obra)
+  // Distribuição de Gastos — empilhado por equipe em % (MP + EQ + V + Mão de Obra)
   const dadosDistribuicaoGastos = equipes.map(equipe => {
     const comprasEquipe = compras.filter(c => c.equipe_id === equipe.id && c.rodada_id && rodadaIds.has(c.rodada_id));
-    const mp = comprasEquipe.filter(c => !isViagem(c) && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
-    const eq = comprasEquipe.filter(c => !isViagem(c) && isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
-    const v  = comprasEquipe.filter(c => isViagem(c)).reduce((s, c) => s + c.valor_total, 0);
-    const mo = (Number(equipe.quantidade_pessoas) || 0) * MAO_DE_OBRA_POR_PESSOA_RODADA * Math.max(rodadasAlvo.length, 1);
-    return { equipe: equipe.nome, mp, eq, v, mo };
+    const mpAbs = comprasEquipe.filter(c => !isViagem(c) && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const eqAbs = comprasEquipe.filter(c => !isViagem(c) && isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const vAbs  = comprasEquipe.filter(c => isViagem(c)).reduce((s, c) => s + c.valor_total, 0);
+    const moAbs = (Number(equipe.quantidade_pessoas) || 0) * MAO_DE_OBRA_POR_PESSOA_RODADA * Math.max(rodadasAlvo.length, 1);
+    const total = mpAbs + eqAbs + vAbs + moAbs;
+    const pct = (n: number) => total > 0 ? Number(((n / total) * 100).toFixed(2)) : 0;
+    return {
+      equipe: equipe.nome,
+      mp: pct(mpAbs), eq: pct(eqAbs), v: pct(vAbs), mo: pct(moAbs),
+      mpAbs, eqAbs, vAbs, moAbs, total,
+    };
   });
 
   const comprasFiltradas = compras.filter(c => c.rodada_id && rodadaIds.has(c.rodada_id));
