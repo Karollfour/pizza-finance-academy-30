@@ -381,26 +381,28 @@ const DashboardLojinha = () => {
         </Card>
       </div>
 
-      {/* 8. Distribuição de Gastos (empilhado por equipe: MP + EQ + V + Mão de Obra) — largura total */}
+      {/* 8. Distribuição de Gastos (% empilhado por equipe: MP + EQ + V + Mão de Obra) — largura total */}
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>📊 Distribuição de Gastos por Equipe (MP / EQ / V / Mão de Obra)</CardTitle>
+          <CardTitle>📊 Distribuição de Gastos por Equipe (%) — MP / EQ / V / Mão de Obra</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={dadosDistribuicaoGastos} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="equipe" />
-              <YAxis />
+              <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} label={{ value: '%', angle: -90, position: 'insideLeft' }} />
               <Tooltip
-                formatter={(value, name) => {
+                formatter={(value, name, props: any) => {
                   const labels: Record<string, string> = {
                     mp: 'MP (Matéria-Prima)',
                     eq: 'EQ (Equipamento)',
                     v:  'V (Viagem)',
                     mo: 'Mão de Obra',
                   };
-                  return [`$ ${Number(value).toFixed(2)}`, labels[name as string] || name];
+                  const absKey = `${name}Abs` as 'mpAbs' | 'eqAbs' | 'vAbs' | 'moAbs';
+                  const abs = props?.payload?.[absKey] ?? 0;
+                  return [`${value}% ($ ${Number(abs).toFixed(2)})`, labels[name as string] || name];
                 }}
               />
               <Legend />
