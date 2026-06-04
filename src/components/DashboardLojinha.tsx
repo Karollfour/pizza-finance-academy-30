@@ -140,14 +140,20 @@ const DashboardLojinha = () => {
     };
   }).filter(p => p.quantidade > 0).sort((a, b) => b.quantidade - a.quantidade);
 
-  // Distribuição de Gastos — empilhado por equipe (MP + EQ + V + Mão de Obra)
+  // Distribuição de Gastos — empilhado por equipe em % (MP + EQ + V + Mão de Obra)
   const dadosDistribuicaoGastos = equipes.map(equipe => {
     const comprasEquipe = compras.filter(c => c.equipe_id === equipe.id && c.rodada_id && rodadaIds.has(c.rodada_id));
-    const mp = comprasEquipe.filter(c => !isViagem(c) && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
-    const eq = comprasEquipe.filter(c => !isViagem(c) && isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
-    const v  = comprasEquipe.filter(c => isViagem(c)).reduce((s, c) => s + c.valor_total, 0);
-    const mo = (Number(equipe.quantidade_pessoas) || 0) * MAO_DE_OBRA_POR_PESSOA_RODADA * Math.max(rodadasAlvo.length, 1);
-    return { equipe: equipe.nome, mp, eq, v, mo };
+    const mpAbs = comprasEquipe.filter(c => !isViagem(c) && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const eqAbs = comprasEquipe.filter(c => !isViagem(c) && isEQ(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
+    const vAbs  = comprasEquipe.filter(c => isViagem(c)).reduce((s, c) => s + c.valor_total, 0);
+    const moAbs = (Number(equipe.quantidade_pessoas) || 0) * MAO_DE_OBRA_POR_PESSOA_RODADA * Math.max(rodadasAlvo.length, 1);
+    const total = mpAbs + eqAbs + vAbs + moAbs;
+    const pct = (n: number) => total > 0 ? Number(((n / total) * 100).toFixed(2)) : 0;
+    return {
+      equipe: equipe.nome,
+      mp: pct(mpAbs), eq: pct(eqAbs), v: pct(vAbs), mo: pct(moAbs),
+      mpAbs, eqAbs, vAbs, moAbs, total,
+    };
   });
 
   const comprasFiltradas = compras.filter(c => c.rodada_id && rodadaIds.has(c.rodada_id));
@@ -375,26 +381,28 @@ const DashboardLojinha = () => {
         </Card>
       </div>
 
-      {/* 8. Distribuição de Gastos (empilhado por equipe: MP + EQ + V + Mão de Obra) — largura total */}
+      {/* 8. Distribuição de Gastos (% empilhado por equipe: MP + EQ + V + Mão de Obra) — largura total */}
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>📊 Distribuição de Gastos por Equipe (MP / EQ / V / Mão de Obra)</CardTitle>
+          <CardTitle>📊 Distribuição de Gastos por Equipe (%) — MP / EQ / V / Mão de Obra</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={dadosDistribuicaoGastos} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="equipe" />
-              <YAxis />
+              <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} label={{ value: '%', angle: -90, position: 'insideLeft' }} />
               <Tooltip
-                formatter={(value, name) => {
+                formatter={(value, name, props: any) => {
                   const labels: Record<string, string> = {
                     mp: 'MP (Matéria-Prima)',
                     eq: 'EQ (Equipamento)',
                     v:  'V (Viagem)',
                     mo: 'Mão de Obra',
                   };
-                  return [`$ ${Number(value).toFixed(2)}`, labels[name as string] || name];
+                  const absKey = `${name}Abs` as 'mpAbs' | 'eqAbs' | 'vAbs' | 'moAbs';
+                  const abs = props?.payload?.[absKey] ?? 0;
+                  return [`${value}% ($ ${Number(abs).toFixed(2)})`, labels[name as string] || name];
                 }}
               />
               <Legend />
