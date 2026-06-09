@@ -28,26 +28,16 @@ export const useProdutos = () => {
   };
 
   const uploadImagem = async (file: File): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `produtos/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('imagens')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('imagens')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (err) {
-      console.error('Erro ao fazer upload da imagem:', err);
-      return null;
-    }
+    // Convert to base64 data URL (storage buckets unavailable in this workspace)
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+      reader.onerror = () => {
+        console.error('Erro ao ler arquivo de imagem');
+        resolve(null);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const criarProduto = async (
