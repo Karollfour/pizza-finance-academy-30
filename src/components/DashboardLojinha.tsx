@@ -113,7 +113,7 @@ const DashboardLojinha = () => {
       lucro: Number(lucro.toFixed(2)),
       corEquipe: equipe.cor_tema || '#3b82f6',
     };
-  }).filter(d => d.pizzasAprovadas > 0);
+  });
 
   // Gastos por equipe — TODAS as equipes (left join), mesmo $0
   const dadosGastos = equipes.map(equipe => {
