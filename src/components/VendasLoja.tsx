@@ -251,17 +251,34 @@ const VendasLoja = () => {
                 return (
                 <Card key={produto.id} className="cursor-pointer hover:shadow-md transition-shadow">
                   <CardContent className="p-3">
-                    {produto.imagem && (
-                      <img src={produto.imagem} alt={produto.nome} className="w-full h-20 rounded mb-2 object-scale-down" />
-                    )}
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <h4 className="font-medium text-sm">{produto.nome}</h4>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                        {(produto as any).tipo || 'MP'}
-                      </Badge>
+                    <div className="flex gap-3">
+                      {/* Imagem do produto */}
+                      <div className="shrink-0">
+                        {produto.imagem ? (
+                          <img
+                            src={produto.imagem}
+                            alt={produto.nome}
+                            className="w-12 h-12 rounded-lg object-cover bg-gray-100"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-xl">
+                            🍕
+                          </div>
+                        )}
+                      </div>
+                      {/* Info do produto */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <h4 className="font-medium text-sm truncate">{produto.nome}</h4>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
+                            {(produto as any).tipo || 'MP'}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-gray-600">{produto.unidade}</p>
+                        <p className="text-sm font-semibold text-green-600">$ {produto.valor_unitario.toFixed(2)}</p>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-600">{produto.unidade}</p>
-                    <p className="text-sm font-semibold text-green-600">$ {produto.valor_unitario.toFixed(2)}</p>
                     <div className="relative mt-2">
                       <Button
                         size="sm"
