@@ -97,7 +97,7 @@ const DashboardLojinha = () => {
     };
   });
 
-  // Análise de Lucro por Pizza (empilhado por equipe: MP + EQ + V + MO)
+  // Análise de Custo por Pizza (empilhado por equipe: MP + EQ + V + MO)
   const dadosAnaliseLucro = equipes.map(equipe => {
     const comprasEquipe = compras.filter(c => c.equipe_id === equipe.id && c.rodada_id && rodadaIds.has(c.rodada_id));
     const mp = comprasEquipe.filter(c => !isViagem(c) && isMP(c.produto_id)).reduce((s, c) => s + c.valor_total, 0);
@@ -217,7 +217,7 @@ const DashboardLojinha = () => {
       {/* 1. Análise de Lucro por Pizza (MP + EQ + V + MO) */}
       <Card className="shadow-lg border-2 border-green-200">
         <CardHeader>
-          <CardTitle>💰 Análise de Lucro por Pizza — {labelFiltro}</CardTitle>
+          <CardTitle>💰 Análise de Custo por Pizza — {labelFiltro}</CardTitle>
         </CardHeader>
         <CardContent>
           {dadosAnaliseLucro.length > 0 ? (
